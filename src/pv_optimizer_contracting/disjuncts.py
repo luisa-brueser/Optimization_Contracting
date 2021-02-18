@@ -4,21 +4,15 @@ from pyomo.gdp import Disjunct, Disjunction
 
 def create_list_disjuncts(model):
     model.only_contractor_supplies = Disjunct()
-    # model.only_contractor_supplies.no_grid=Constraint(expr=sum(model.supply[t, 'Grid_Only'] for t in model.time) <= 0)
-    # model.only_contractor_supplies.no_pv=Constraint(expr=sum(model.supply[t, 'PV'] for t in model.time)  <= 0)
     model.only_contractor_supplies.no_grid_cap=Constraint(expr=model.capacity['Grid_Only'] <= 0)
     model.only_contractor_supplies.no_pv_cap=Constraint(expr=model.capacity['PV']  <= 0)
     
     model.only_grid_supplies = Disjunct()
-    # model.only_grid_supplies.no_contractor=Constraint(expr=sum(model.supply[t, 'Pv_Contractor'] for t in model.time)<= 0)
-    # model.only_grid_supplies.no_pv=Constraint(expr=sum(model.supply[t, 'PV'] for t in model.time)<= 0)
     model.only_grid_supplies.no_grid_cap=Constraint(expr=model.capacity['Pv_Contractor'] <= 0)
     model.only_grid_supplies.no_pv_cap=Constraint(expr=model.capacity['PV'] <= 0)
 
 
     model.only_pv_supplies = Disjunct()
-    # model.only_pv_supplies.no_contractor=Constraint(expr=sum(model.supply[t, 'Pv_Contractor'] for t in model.time)<= 0)
-    # model.only_pv_supplies.no_grid=Constraint(expr=sum(model.supply[t, 'Grid_Only'] for t in model.time)<= 0)
     model.only_pv_supplies.no_grid_cap=Constraint(expr=model.capacity['Pv_Contractor'] <= 0)
     model.only_pv_supplies.no_pv_cap=Constraint(expr=model.capacity['Grid_Only']  <= 0)
 

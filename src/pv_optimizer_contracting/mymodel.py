@@ -7,7 +7,7 @@ from disjuncts import create_list_disjuncts
 model = ConcreteModel()
 
 # Loading all variables from input
-set_time,set_options,dict_dem,dict_capacity_factor,dict_price_elec,dict_price_invest,param_annuity,param_area,param_area_pv=read_data()
+set_time,set_options,dict_dem,dict_capacity_factor,dict_price_elec,dict_price_invest,param_annuity,param_area,param_specific_area_pv=read_data()
 
 
 # Sets
@@ -17,7 +17,7 @@ model.options = Set(initialize = set_options.keys(),doc="grid only OR contractor
 # Parameters
 model.annuity=Param(initialize = param_annuity,mutable=False)
 model.area=Param(initialize = param_area,mutable=False,within=Any)
-model.specific_area_pv=Param(initialize = param_area_pv,mutable=False,within=Any)
+model.specific_area_pv=Param(initialize = param_specific_area_pv,mutable=False,within=Any)
 model.demand = Param(model.time, initialize = dict_dem)
 model.price_elec = Param(model.options, initialize = dict_price_elec, doc="Prices for electricity, per option per timestep")
 model.price_invest = Param(model.options, initialize = dict_price_invest,doc="Prices for initial investment, per option")
