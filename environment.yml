@@ -1,0 +1,19 @@
+name: pv_optimizer_contracting
+channels:
+  - defaults
+dependencies:
+  - pip
+  - Python>=3.9
+  - pip:
+      - black
+      - isort
+      - matplotlib
+      - pandas
+      - pathlib
+      - openpyxl
+      - coloredlogs
+      - pyomo
+      - pytest
+      - pytest-dependency
+      - pytest-datafiles
+      - pytest-excel
