@@ -38,3 +38,7 @@ def read_data():
 # print('param_area_pv: ', param_area_pv)
 # print('param_area: ', param_area)
 
+
+print(read_data())
+
+
