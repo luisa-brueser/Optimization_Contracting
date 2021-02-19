@@ -22,26 +22,46 @@ from pyomo.gdp import Disjunct, Disjunction
 
 def create_disjuction(model):
 
-    model.number_options = RangeSet(3)
+    model.number_options = (['Pv_Contractor','Grid_Only','PV'])
     model.number_disjunction = RangeSet(1)
     model.d = Disjunct(model.number_options)
     model.djn = Disjunction(model.number_disjunction)
-    model.djn[1] = [model.d[1], model.d[2],model.d[3]]
-    model.d[1].c = Constraint(expr=model.capacity['Grid_Only'] == 0)
-    model.d[1].c2 = Constraint(expr=model.capacity['PV'] == 0)
-    model.d[1].c3 = Constraint(expr=model.capacity['Pv_Contractor'] <= (model.area_roof/model.specific_area_pv))
+    model.djn[1] = [model.d['Pv_Contractor'], model.d['Grid_Only'],model.d['PV']]
 
-    model.d[2].c = Constraint(expr=model.capacity['Pv_Contractor'] == 0)
-    model.d[2].c2 = Constraint(expr=model.capacity['PV'] == 0)
-    model.d[3].c = Constraint(expr=model.capacity['Pv_Contractor'] == 0)
-    model.d[3].c2 = Constraint(expr=model.capacity['Grid_Only'] == 0)
+    model.d['Pv_Contractor'].no_grid = Constraint(expr=model.capacity['Grid_Only'] == 0)
+    model.d['Pv_Contractor'].no_pv = Constraint(expr=model.capacity['PV'] == 0)
+    model.d['Pv_Contractor'].pv_area_cap = Constraint(expr=model.capacity['Pv_Contractor'] <= (model.area_roof/model.specific_area_pv))
+
+    model.d['Grid_Only'].no_contracting = Constraint(expr=model.capacity['Pv_Contractor'] == 0)
+    model.d['Grid_Only'].no_pv = Constraint(expr=model.capacity['PV'] == 0)
+
+    model.d['PV'].no_contracting = Constraint(expr=model.capacity['Pv_Contractor'] == 0)
+    model.d['PV'].no_grid_cap = Constraint(expr=model.capacity['Grid_Only'] == 0)
+    model.d['PV'].pv_area_cap=Constraint(expr=model.capacity['PV'] <= (model.area_roof/model.specific_area_pv))
+
+# def create_disjuction(model):
+
+#     model.number_options = RangeSet(3)
+#     model.number_disjunction = RangeSet(1)
+#     model.d = Disjunct(model.number_options)
+#     model.djn = Disjunction(model.number_disjunction)
+#     model.djn[1] = [model.d[1], model.d[2],model.d[3]]
+#     model.d[1].c = Constraint(expr=model.capacity['Grid_Only'] == 0)
+#     model.d[1].c2 = Constraint(expr=model.capacity['PV'] == 0)
+#     model.d[1].c3 = Constraint(expr=model.capacity['Pv_Contractor'] <= (model.area_roof/model.specific_area_pv))
+
+#     model.d[2].c = Constraint(expr=model.capacity['Pv_Contractor'] == 0)
+#     model.d[2].c2 = Constraint(expr=model.capacity['PV'] == 0)
+#     model.d[3].c = Constraint(expr=model.capacity['Pv_Contractor'] == 0)
+#     model.d[3].c2 = Constraint(expr=model.capacity['Grid_Only'] == 0)
+
 
 def create_boolean_var(model):
-    model.Y = BooleanVar(model.number_options)
-    for idx in model.Y:
-        model.Y[idx].associate_binary_var(model.d[idx].indicator_var)
+    model.option_binary_var = BooleanVar(model.number_options)
+    for idx in model.option_binary_var:
+        model.option_binary_var[idx].associate_binary_var(model.d[idx].indicator_var)
 
-    return model.Y
+    return model.option_binary_var
 
 def update_boolean_vars_from_binary(model, integer_tolerance=1e-5):
     """Updates all Boolean variables based on the value of their linked binary variables."""

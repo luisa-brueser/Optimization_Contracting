@@ -52,7 +52,10 @@ def read_data():
 
     return (set_time,set_options,dict_dem,dict_capacity_factor,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv)
 
-# (set_time,set_options,dict_dem,dict_capacity_factor,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv)=read_data()
+#(set_time,set_options,dict_dem,dict_capacity_factor,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv)=read_data()    
+#print('set_options: ', set_options)
+
+
 # print('param_specific_area_pv: ', param_specific_area_pv)
 # print('param_area_roof: ', param_area_roof)
 

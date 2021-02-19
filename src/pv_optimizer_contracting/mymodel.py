@@ -148,7 +148,7 @@ model.c2 = Constraint(model.time,model.options,rule=production_rule, doc='Supply
 #     model.Y[idx].associate_binary_var(model.list_disjuncts[idx].indicator_var)
 
 create_disjuction(model=model)
-model.Y=create_boolean_var(model=model)
+model.option_binary_var=create_boolean_var(model=model)
 
 
 #
@@ -163,7 +163,7 @@ results=opt.solve(model)
 
 update_boolean_vars_from_binary(model=model)
 
-model.Y.display()
+model.option_binary_var.display()
 
 print('Total Cost:',model.obj())
 print('Grid_Only in hour 1:',model.supply[1,'Grid_Only'].value)
