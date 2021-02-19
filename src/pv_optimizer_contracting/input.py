@@ -18,7 +18,7 @@ def read_data():
 
     general_df = pd.read_excel(io=input_file_path, sheet_name="General Data").drop([0])   
     param_annuity=general_df['Annuity Factor'].loc[1]
-    param_area=general_df['Area Roof'].loc[1]
+    param_area_roof=general_df['Area Roof'].loc[1]
     param_specific_area_pv=general_df['Area PV'].loc[1]
     param_capacity_factor_grid=general_df['Capacity factor grid'].loc[1]
 
@@ -50,13 +50,13 @@ def read_data():
 
     
 
-    return (set_time,set_options,dict_dem,dict_capacity_factor,dict_price_elec,dict_price_invest,param_annuity,param_area,param_specific_area_pv)
+    return (set_time,set_options,dict_dem,dict_capacity_factor,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv)
 
-# (set_time,set_options,dict_dem,dict_capacity_factor,dict_price_elec,dict_price_invest,param_annuity,param_area,param_specific_area_pv)=read_data()
+# (set_time,set_options,dict_dem,dict_capacity_factor,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv)=read_data()
 # print('param_specific_area_pv: ', param_specific_area_pv)
-# print('param_area: ', param_area)
+# print('param_area_roof: ', param_area_roof)
 
-# set_time,set_options,dict_dem,dict_capacity_factor,dict_price_elec,dict_price_invest,param_annuity,param_area,param_specific_area_pv = read_data()
+# set_time,set_options,dict_dem,dict_capacity_factor,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv = read_data()
 # print('dict_capacity_factor: ', dict_capacity_factor)
 
 

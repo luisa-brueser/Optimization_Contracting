@@ -2,22 +2,59 @@ from pyomo.environ import *
 from pyomo.gdp import Disjunct, Disjunction
 
 
-def create_list_disjuncts(model):
-    model.only_contractor_supplies = Disjunct()
-    model.only_contractor_supplies.no_grid_cap=Constraint(expr=model.capacity['Grid_Only'] <= 0)
-    model.only_contractor_supplies.no_pv_cap=Constraint(expr=model.capacity['PV']  <= 0)
+# def create_list_disjuncts(model):
+#     model.only_contractor_supplies = Disjunct()
+#     model.only_contractor_supplies.no_grid_cap=Constraint(expr=model.capacity['Grid_Only'] <= 0)
+#     model.only_contractor_supplies.no_pv_cap=Constraint(expr=model.capacity['PV']  <= 0)
+#     model.only_contractor_supplies.pv_area_cap=Constraint(expr=model.capacity['Pv_Contractor'] <= (model.area_roof/model.specific_area_pv))
     
-    model.only_grid_supplies = Disjunct()
-    model.only_grid_supplies.no_grid_cap=Constraint(expr=model.capacity['Pv_Contractor'] <= 0)
-    model.only_grid_supplies.no_pv_cap=Constraint(expr=model.capacity['PV'] <= 0)
+#     model.only_grid_supplies = Disjunct()
+#     model.only_grid_supplies.no_grid_cap=Constraint(expr=model.capacity['Pv_Contractor'] <= 0)
+#     model.only_grid_supplies.no_pv_cap=Constraint(expr=model.capacity['PV'] <= 0)
+
+#     model.only_pv_supplies = Disjunct()
+#     model.only_pv_supplies.no_grid_cap=Constraint(expr=model.capacity['Pv_Contractor'] <= 0)
+#     model.only_pv_supplies.no_pv_cap=Constraint(expr=model.capacity['Grid_Only']  <= 0)
+#     model.only_pv_supplies.pv_area_cap=Constraint(expr=model.capacity['PV'] <= (model.area_roof/model.specific_area_pv))
+
+#     return [model.only_contractor_supplies,model.only_grid_supplies,model.only_pv_supplies]
 
 
-    model.only_pv_supplies = Disjunct()
-    model.only_pv_supplies.no_grid_cap=Constraint(expr=model.capacity['Pv_Contractor'] <= 0)
-    model.only_pv_supplies.no_pv_cap=Constraint(expr=model.capacity['Grid_Only']  <= 0)
+def create_disjuction(model):
 
-    return [model.only_contractor_supplies,model.only_grid_supplies,model.only_pv_supplies]
-     
+    model.number_options = RangeSet(3)
+    model.number_disjunction = RangeSet(1)
+    model.d = Disjunct(model.number_options)
+    model.djn = Disjunction(model.number_disjunction)
+    model.djn[1] = [model.d[1], model.d[2],model.d[3]]
+    model.d[1].c = Constraint(expr=model.capacity['Grid_Only'] == 0)
+    model.d[1].c2 = Constraint(expr=model.capacity['PV'] == 0)
+    model.d[1].c3 = Constraint(expr=model.capacity['Pv_Contractor'] <= (model.area_roof/model.specific_area_pv))
+
+    model.d[2].c = Constraint(expr=model.capacity['Pv_Contractor'] == 0)
+    model.d[2].c2 = Constraint(expr=model.capacity['PV'] == 0)
+    model.d[3].c = Constraint(expr=model.capacity['Pv_Contractor'] == 0)
+    model.d[3].c2 = Constraint(expr=model.capacity['Grid_Only'] == 0)
+
+def create_boolean_var(model):
+    model.Y = BooleanVar(model.number_options)
+    for idx in model.Y:
+        model.Y[idx].associate_binary_var(model.d[idx].indicator_var)
+
+    return model.Y
+
+def update_boolean_vars_from_binary(model, integer_tolerance=1e-5):
+    """Updates all Boolean variables based on the value of their linked binary variables."""
+    for boolean_var in model.component_data_objects(BooleanVar, descend_into=(Block, Disjunct)):
+        binary_var = boolean_var.get_associated_binary()
+        if binary_var is not None and binary_var.value is not None:
+            if abs(binary_var.value - 1) <= integer_tolerance:
+                boolean_var.value = True
+            elif abs(binary_var.value) <= integer_tolerance:
+                boolean_var.value = False
+            else:
+                raise ValueError("Binary variable has non-{0,1} value: %s = %s" % (binary_var.name, binary_var.value))
+            boolean_var.stale = binary_var.stale
 
 
 
