@@ -8,8 +8,8 @@ model = ConcreteModel()
 
 
 # Loading all variables from input data
-(set_time,set_options,dict_dem,dict_capacity_factor,dict_price_elec,
-dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv)=read_data()
+(set_time,set_options,dict_dem,dict_capacity_factor,dict_max_capacity,dict_price_elec,dict_price_invest,
+param_annuity,param_area_roof,param_specific_area_pv)=read_data()
 
 
 # Sets
@@ -25,6 +25,8 @@ model.price_elec = Param(model.options, initialize = dict_price_elec, doc='Price
 model.price_invest = Param(model.options, initialize = dict_price_invest,doc='Prices for initial investment, per option')
 model.capacity_factor = Param(model.time,model.options,initialize =dict_capacity_factor,
                         doc='Maximum available electricity supply per unit of installed capacity, per option per timestep [kW/kWp]')
+model.max_capacity = Param(model.options,initialize =dict_max_capacity,
+                        doc='Maximum capacity that can be installed per option, for options with PV it is limited by the area of the roof [kW]')
 
 #Vaiables
 model.supply = Var(model.time, model.options, within=NonNegativeReals,doc='Amount of electricity supplied, per option per timeperiod')
@@ -45,6 +47,10 @@ model.c1 = Constraint(model.time,model.options,rule=demand_rule, doc='Supply equ
 def production_rule(model,time,option):
     return model.capacity_factor[time,option]* model.capacity[option] >= model.supply[time,option]
 model.c2 = Constraint(model.time,model.options,rule=production_rule, doc='Supply is smaller or equal to max. production')
+
+def max_capacity_rule(model,option):
+    return model.capacity[option] <= model.max_capacity[option]
+model.c3 = Constraint(model.options,rule=max_capacity_rule, doc='Installed capacity is smaller or equal maximum capacity')
 
 # Disjunction (to encure that only ONE option is chosen)
 create_disjuction(model=model)

@@ -21,6 +21,7 @@ def read_data():
     param_area_roof=general_df['Area Roof'].loc[1]
     param_specific_area_pv=general_df['Area PV'].loc[1]
     param_capacity_factor_grid=general_df['Capacity factor grid'].loc[1]
+    param_max_capacity_grid=general_df['Capacity limit grid'].loc[1]
 
     demand_df = pd.read_excel(io=input_file_path, sheet_name='Demand').reset_index().dropna().set_index('time')
     dict_dem = demand_df['demand'].to_dict()
@@ -45,10 +46,24 @@ def read_data():
     # combine capacity factor of all options
     dict_capacity_factor = {**dict_capacity_factor_fix_supply, **dict_capacity_factor_var_supply}
 
+    # maximum capacity of PV option is limited by the area of the roof
+    dict_max_capacity_pv= dict()
+    for idx in set_options_var_supply:
+        dict_max_capacity_pv[idx]=(param_area_roof/param_specific_area_pv)
+
+    # maximum capacity of grid is given as constant value
+    dict_max_capacity_grid= dict()
+    for idx in set_options_fix_supply:
+        dict_max_capacity_grid[idx] = param_max_capacity_grid
+
+    # combine maximum capacity of all options
+    dict_max_capacity = {**dict_max_capacity_pv, **dict_max_capacity_grid}
+
     cost_df = pd.read_excel(io=input_file_path, sheet_name='Cost').set_index(['Options']).drop(['Unit'])
     dict_price_elec = cost_df['Cost of Electricity'].to_dict()
     dict_price_invest = cost_df['Investment Cost'].to_dict()
-    return (set_time,set_options,dict_dem,dict_capacity_factor,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv)
+    return (set_time,set_options,dict_dem,dict_capacity_factor,dict_max_capacity,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv)
+
 
 
 
