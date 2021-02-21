@@ -69,23 +69,31 @@ def read_data():
 # print('dict_max_capacity: ', dict_max_capacity)
 
 
+def define_charging_time():
+    set_df = pd.read_excel(io=input_file_path, sheet_name='Sets')
+    set_df.set_index('time',inplace=True)
+    charging_time_idx = [idx for idx in set_df.index if (idx.hour>=16)&(idx.hour<=24)]
+    charging_time_df = set_df.loc[charging_time_idx]
+    set_charging_time = dict.fromkeys(charging_time_df.index,0)
+    return set_charging_time
 
+set_charging_time=define_charging_time()
+print('set_charging_time: ', set_charging_time)
 
+# test_time_df = pd.read_excel(io=input_file_path, sheet_name='test_date')
+# # test_time_df['time']=pd.to_datetime(test_time_df['time'])
+# # time_mask = (test_time_df['time'].dt.hour >= 13) & \
+# #             (test_time_df['time'].dt.hour <= 15)
 
-test_time_df = pd.read_excel(io=input_file_path, sheet_name='test_date')
-# test_time_df['time']=pd.to_datetime(test_time_df['time'])
-# time_mask = (test_time_df['time'].dt.hour >= 13) & \
-#             (test_time_df['time'].dt.hour <= 15)
+# # new_df=test_time_df[time_mask]
 
-# new_df=test_time_df[time_mask]
+# # print('test_time_df[time_mask]: ', test_time_df[time_mask])
 
-# print('test_time_df[time_mask]: ', test_time_df[time_mask])
-
-test_time_df.set_index('time',inplace=True)
-choseInd = [ind for ind in test_time_df.index if (ind.hour>=13)&(ind.hour<=15)]
-df_select = test_time_df.loc[choseInd]
-print('df_select: ', df_select)
-set_time = dict.fromkeys(df_select.index,0)
-print('set_time: ', set_time)
+# test_time_df.set_index('time',inplace=True)
+# choseInd = [ind for ind in test_time_df.index if (ind.hour>=13)&(ind.hour<=15)]
+# df_select = test_time_df.loc[choseInd]
+# print('df_select: ', df_select)
+# set_time = dict.fromkeys(df_select.index,0)
+# print('set_time: ', set_time)
 
 

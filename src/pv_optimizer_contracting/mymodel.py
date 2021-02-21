@@ -1,8 +1,13 @@
 from pyomo.environ import *
 from pyomo.gdp import Disjunct, Disjunction
 import pandas as pd
-from input import read_data
+from input import *
 from disjunction import *
+import matplotlib
+import matplotlib.pyplot as plt
+
+
+
 model = ConcreteModel()
 
 
@@ -10,10 +15,11 @@ model = ConcreteModel()
 # Loading all variables from input data
 (set_time,set_options,dict_dem,dict_capacity_factor,dict_max_capacity,dict_price_elec,dict_price_invest,
 param_annuity,param_area_roof,param_specific_area_pv)=read_data()
-
+set_charging_time=define_charging_time()
 
 # Sets
 model.time = Set(initialize = set_time.keys(),doc='time in timesteps of 1h')
+model.charging_time = Set(initialize = set_charging_time.keys(),doc='Charging time (after 4pm) in timesteps of 1h')
 model.options = Set(initialize = set_options.keys(),doc='Supply by grid only or contractor financed PV or PV')
 
 # Parameters
@@ -44,9 +50,13 @@ model.obj = Objective(rule = cost_rule, sense=minimize, doc='minimize total cost
 #     return sum(model.supply[time,option] for option in model.options for time in model.time) == sum(model.demand[time] for time in model.time)
 # model.c1 = Constraint(model.time,model.options,rule=demand_rule, doc='Supply equals demand within sum of all time steps')
 
+# def demand_rule(model,time,option):
+#     return sum(model.supply[time,option] for option in model.options) == model.demand[time] 
+# model.c1 = Constraint(model.time,model.options,rule=demand_rule, doc='Supply equals demand at every timestep')
+
 def demand_rule(model,time,option):
     return sum(model.supply[time,option] for option in model.options) == model.demand[time] 
-model.c1 = Constraint(model.time,model.options,rule=demand_rule, doc='Supply equals demand at every timestep')
+model.c1 = Constraint(model.charging_time,model.options,rule=demand_rule, doc='Supply equals demand at charging times')
 
 def production_rule(model,time,option):
     return model.capacity_factor[time,option]* model.capacity[option] >= model.supply[time,option]
@@ -90,3 +100,8 @@ status = results.solver.status
 termination_condition = results.solver.termination_condition
 print('termination_condition: ', termination_condition)
 print('status: ', status)
+
+
+fig, ax = plt.subplots()
+ax.plot(model.time, model.supply['2021-01-01 16:00:00','Pv_Contractor'])
+plt.show()
