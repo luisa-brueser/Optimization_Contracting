@@ -40,9 +40,13 @@ def cost_rule(model):
 model.obj = Objective(rule = cost_rule, sense=minimize, doc='minimize total costs')
 
 ## Constraints
+# def demand_rule(model,time,option):
+#     return sum(model.supply[time,option] for option in model.options for time in model.time) == sum(model.demand[time] for time in model.time)
+# model.c1 = Constraint(model.time,model.options,rule=demand_rule, doc='Supply equals demand within sum of all time steps')
+
 def demand_rule(model,time,option):
-    return sum(model.supply[time,option] for option in model.options for time in model.time) == sum(model.demand[time] for time in model.time)
-model.c1 = Constraint(model.time,model.options,rule=demand_rule, doc='Supply equals demand within sum of all time steps')
+    return sum(model.supply[time,option] for option in model.options) == model.demand[time] 
+model.c1 = Constraint(model.time,model.options,rule=demand_rule, doc='Supply equals demand at every timestep')
 
 def production_rule(model,time,option):
     return model.capacity_factor[time,option]* model.capacity[option] >= model.supply[time,option]
@@ -61,7 +65,7 @@ TransformationFactory('gdp.bigm').apply_to(model)#
 ##Solve Optimization
 opt = SolverFactory('glpk')
 results=opt.solve(model)
-
+model.pprint()
 update_boolean_vars_from_binary(model=model) #update binary variable after solving 
 model.option_binary_var.display() #see which option is chosen
 
@@ -75,9 +79,12 @@ print('Supply Pv_Contractor in hour 2:',model.supply[2,'Pv_Contractor'].value,'k
 print('Capacity Grid',model.capacity['Grid_Only'].value,'kW')
 print('Capacity PV',model.capacity['PV'].value,'kW')
 print('Capacity Pv_Contractor',model.capacity['Pv_Contractor'].value,'kW')
+print('Sum supply Grid_Only',sum(model.supply[t,'Grid_Only'].value for t in model.time))
+print('Sum supply PV',sum(model.supply[t,'PV'].value for t in model.time))
+print('Sum supply Pv_Contractor',sum(model.supply[t,'Pv_Contractor'].value for t in model.time))
 
 # instance = model.create_instance()
-# model.pprint()
+#model.pprint()
 
 status = results.solver.status
 termination_condition = results.solver.termination_condition

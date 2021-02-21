@@ -64,8 +64,14 @@ def read_data():
     dict_price_invest = cost_df['Investment Cost'].to_dict()
     return (set_time,set_options,dict_dem,dict_capacity_factor,dict_max_capacity,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv)
 
+# set_time,set_options,dict_dem,dict_capacity_factor,dict_max_capacity,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv=read_data()
+# print('dict_capacity_factor: ', dict_capacity_factor)
+# print('dict_max_capacity: ', dict_max_capacity)
 
 
 
+#dict_dem = demand_df['demand'].to_dict()
 
 
+set_time = dict.fromkeys(set_df['time'].dropna(),0)
+print('set_time: ', set_time)
