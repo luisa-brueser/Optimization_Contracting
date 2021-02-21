@@ -65,17 +65,17 @@ TransformationFactory('gdp.bigm').apply_to(model)#
 ##Solve Optimization
 opt = SolverFactory('glpk')
 results=opt.solve(model)
-model.pprint()
+# model.pprint()
 update_boolean_vars_from_binary(model=model) #update binary variable after solving 
 model.option_binary_var.display() #see which option is chosen
 
 print('Total Cost:',model.obj(), '€')
-print('Supply Grid_Only in hour 1:',model.supply[1,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 2:',model.supply[2,'Grid_Only'].value,'kW')
-print('Supply PV in hour 1:', model.supply[1,'PV'].value,'kW')
-print('Supply PV in hour 2:', model.supply[2,'PV'].value,'kW')
-print('Supply Pv_Contractor in hour 1:',model.supply[1,'Pv_Contractor'].value,'kW')
-print('Supply Pv_Contractor in hour 2:',model.supply[2,'Pv_Contractor'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[1,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 2:',model.supply[2,'Grid_Only'].value,'kW')
+# print('Supply PV in hour 1:', model.supply[1,'PV'].value,'kW')
+# print('Supply PV in hour 2:', model.supply[2,'PV'].value,'kW')
+# print('Supply Pv_Contractor in hour 1:',model.supply[1,'Pv_Contractor'].value,'kW')
+# print('Supply Pv_Contractor in hour 2:',model.supply[2,'Pv_Contractor'].value,'kW')
 print('Capacity Grid',model.capacity['Grid_Only'].value,'kW')
 print('Capacity PV',model.capacity['PV'].value,'kW')
 print('Capacity Pv_Contractor',model.capacity['Pv_Contractor'].value,'kW')

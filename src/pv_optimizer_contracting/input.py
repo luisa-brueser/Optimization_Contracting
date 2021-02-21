@@ -1,6 +1,6 @@
 import pandas as pd
 from pathlib import Path
-
+from datetime import datetime
 
 input_file_path = Path(__file__).parent / 'data_input.xlsx'
 
@@ -70,8 +70,22 @@ def read_data():
 
 
 
-#dict_dem = demand_df['demand'].to_dict()
 
 
-set_time = dict.fromkeys(set_df['time'].dropna(),0)
+test_time_df = pd.read_excel(io=input_file_path, sheet_name='test_date')
+# test_time_df['time']=pd.to_datetime(test_time_df['time'])
+# time_mask = (test_time_df['time'].dt.hour >= 13) & \
+#             (test_time_df['time'].dt.hour <= 15)
+
+# new_df=test_time_df[time_mask]
+
+# print('test_time_df[time_mask]: ', test_time_df[time_mask])
+
+test_time_df.set_index('time',inplace=True)
+choseInd = [ind for ind in test_time_df.index if (ind.hour>=13)&(ind.hour<=15)]
+df_select = test_time_df.loc[choseInd]
+print('df_select: ', df_select)
+set_time = dict.fromkeys(df_select.index,0)
 print('set_time: ', set_time)
+
+
