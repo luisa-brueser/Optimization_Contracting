@@ -77,8 +77,8 @@ def define_charging_time():
     set_charging_time = dict.fromkeys(charging_time_df.index,0)
     return set_charging_time
 
-set_charging_time=define_charging_time()
-print('set_charging_time: ', set_charging_time)
+# set_charging_time=define_charging_time()
+# print('set_charging_time: ', set_charging_time)
 
 # test_time_df = pd.read_excel(io=input_file_path, sheet_name='test_date')
 # # test_time_df['time']=pd.to_datetime(test_time_df['time'])

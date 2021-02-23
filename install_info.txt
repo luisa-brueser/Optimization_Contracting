@@ -33,11 +33,11 @@
 
 	Terminal output should change from.. 
 
-		(base) C:\Code\pyomo\pv_optimizer_contracting>
+		(base) C:\ProgramData\Anaconda3\envs\pv_optimizer_contracting>
 
 	.. to:
 
-		(pv_optimizer_contracting) C:\Code\pyomo\pv_optimizer_contracting> 
+		(pv_optimizer_contracting) C:\ProgramData\Anaconda3\envs\pv_optimizer_contracting>
 
 3) With your pv_optimizer_contracting-environment activated, execute the following in your project folder (the folder where "setup.py" is located), from the opened anaconda prompt:
 
@@ -45,7 +45,7 @@
 
 	Terminal output:
 
-	Obtaining file:///C:/Code/pyomo/pv_optimizer_contracting
+	Obtaining file:///C:..../Code/pv_optimizer_contracting
 	Installing collected packages: pv-supply-optimizer
 		Running setup.py develop for pv-supply-optimizer
 	Successfully installed pv-supply-optimizer

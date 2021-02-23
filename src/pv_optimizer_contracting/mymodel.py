@@ -46,17 +46,17 @@ def cost_rule(model):
 model.obj = Objective(rule = cost_rule, sense=minimize, doc='minimize total costs')
 
 ## Constraints
-# def demand_rule(model,time,option):
-#     return sum(model.supply[time,option] for option in model.options for time in model.time) == sum(model.demand[time] for time in model.time)
-# model.c1 = Constraint(model.time,model.options,rule=demand_rule, doc='Supply equals demand within sum of all time steps')
+def demand_rule(model,time,option):
+    return sum(model.supply[time,option] for option in model.options for time in model.time) == sum(model.demand[time] for time in model.time)
+model.c1 = Constraint(model.time,model.options,rule=demand_rule, doc='Supply equals demand within sum of all time steps')
 
 # def demand_rule(model,time,option):
 #     return sum(model.supply[time,option] for option in model.options) == model.demand[time] 
 # model.c1 = Constraint(model.time,model.options,rule=demand_rule, doc='Supply equals demand at every timestep')
 
-def demand_rule(model,time,option):
-    return sum(model.supply[time,option] for option in model.options) == model.demand[time] 
-model.c1 = Constraint(model.charging_time,model.options,rule=demand_rule, doc='Supply equals demand at charging times')
+# def demand_rule(model,time,option):
+#     return sum(model.supply[time,option] for option in model.options) == model.demand[time] 
+# model.c1 = Constraint(model.charging_time,model.options,rule=demand_rule, doc='Supply equals demand at charging times')
 
 def production_rule(model,time,option):
     return model.capacity_factor[time,option]* model.capacity[option] >= model.supply[time,option]
@@ -80,6 +80,8 @@ update_boolean_vars_from_binary(model=model) #update binary variable after solvi
 model.option_binary_var.display() #see which option is chosen
 
 print('Total Cost:',model.obj(), '€')
+#print('Supply Grid_Only in hour 1:',model.supply[('2021-01-01 00:16:00'), 'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[Timestamp('2021-01-01 21:00:00'), 'Grid_Only'],'kW')
 # print('Supply Grid_Only in hour 1:',model.supply[1,'Grid_Only'].value,'kW')
 # print('Supply Grid_Only in hour 2:',model.supply[2,'Grid_Only'].value,'kW')
 # print('Supply PV in hour 1:', model.supply[1,'PV'].value,'kW')
@@ -102,6 +104,6 @@ print('termination_condition: ', termination_condition)
 print('status: ', status)
 
 
-fig, ax = plt.subplots()
-ax.plot(model.time, model.supply['2021-01-01 16:00:00','Pv_Contractor'])
-plt.show()
+# fig, ax = plt.subplots()
+# ax.plot(model.time,value(model.supply[t,'Grid_Only'] for t in model.time))
+# plt.show()

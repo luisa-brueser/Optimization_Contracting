@@ -13,3 +13,4 @@ dependencies:
       - openpyxl
       - coloredlogs
       - pyomo
+      - pyam-iamc
