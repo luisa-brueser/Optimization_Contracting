@@ -27,6 +27,12 @@ def read_data():
     dict_dem = demand_df['demand'].to_dict()
 
     irradiation_df = pd.read_excel(io=input_file_path, sheet_name='irradiation', index_col=0) 
+
+    #irradtion on the full roof area
+    dict_irradiation_full_pv_area = dict(irradiation_df['PV'])
+    for key in dict_irradiation_full_pv_area:
+        dict_irradiation_full_pv_area[key] = dict_irradiation_full_pv_area[key] *param_area_roof          
+
     dict_irradiation = dict()
     for idx1 in set_time :
         for idx2 in set_options_var_supply:
@@ -62,9 +68,14 @@ def read_data():
     cost_df = pd.read_excel(io=input_file_path, sheet_name='Cost').set_index(['Options']).drop(['Unit'])
     dict_price_elec = cost_df['Cost of Electricity'].to_dict()
     dict_price_invest = cost_df['Investment Cost'].to_dict()
-    return (set_time,set_options,dict_dem,dict_capacity_factor,dict_max_capacity,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv)
+    return (set_time,set_options,dict_dem,dict_irradiation_full_pv_area,dict_capacity_factor,dict_max_capacity,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv)
 
-# set_time,set_options,dict_dem,dict_capacity_factor,dict_max_capacity,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv=read_data()
+set_time,set_options,dict_dem,dict_irradiation_full_pv_area,dict_capacity_factor,dict_max_capacity,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv=read_data()
+print('dict_irradiation_full_pv_area: ', dict_irradiation_full_pv_area)
+#print('dict_irradiation_full_pv_area: ', dict_irradiation_full_pv_area)
+#print('set_options: ', set_options)
+# print('dict_dem: ', dict_dem)
+# print('set_time: ', set_time)
 # print('dict_capacity_factor: ', dict_capacity_factor)
 # print('dict_max_capacity: ', dict_max_capacity)
 
@@ -72,10 +83,21 @@ def read_data():
 def define_charging_time():
     set_df = pd.read_excel(io=input_file_path, sheet_name='Sets')
     set_df.set_index('time',inplace=True)
-    charging_time_idx = [idx for idx in set_df.index if (idx.hour>=16)&(idx.hour<=24)]
+    charging_time_idx = [idx for idx in set_df.index if (idx>=16)&(idx<=24)]
     charging_time_df = set_df.loc[charging_time_idx]
     set_charging_time = dict.fromkeys(charging_time_df.index,0)
     return set_charging_time
+
+
+# # ////// 'with timestamps'
+# def define_charging_time():
+#     set_df = pd.read_excel(io=input_file_path, sheet_name='Sets')
+#     set_df.set_index('time',inplace=True)
+#     charging_time_idx = [idx for idx in set_df.index if (idx.hour>=16)&(idx.hour<=24)]
+#     charging_time_df = set_df.loc[charging_time_idx]
+#     set_charging_time = dict.fromkeys(charging_time_df.index,0)
+#     return set_charging_time
+
 
 # set_charging_time=define_charging_time()
 # print('set_charging_time: ', set_charging_time)
@@ -95,5 +117,3 @@ def define_charging_time():
 # print('df_select: ', df_select)
 # set_time = dict.fromkeys(df_select.index,0)
 # print('set_time: ', set_time)
-
-

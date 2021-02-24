@@ -1,2 +1,5 @@
-Model,Scenario,Region,Variable,Unit,0,4,8,12,16,20,24
-Contracting_model,Contracting_1,Vienna,Supply_PV,kW,0,0,4,6,8,2,0
+Model,Scenario,Region,Variable,Unit,0,4,8,12,15,16,17,18,19,20,24
+Contracting_model,Contracting_1,Grid_Only,Supply,kW,0.0,0.0,0.0,0.0,0.0,22.0,22.0,22.0,22.0,0.0,0.0
+Contracting_model,Contracting_1,Pv_Contractor,Supply,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Contracting_1,demand,Demand,kW,0.0,0.0,0.0,0.0,0.0,22.0,22.0,22.0,22.0,0.0,0.0
+Contracting_model,Contracting_1,irradiation_full_pv_area,Irradiation,kW,0.0,0.0,3.4000000000000004,12.76,12.16,10.82,8.52,5.8,2.92,0.8999999999999999,0.0
