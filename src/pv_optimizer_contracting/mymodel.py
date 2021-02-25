@@ -10,8 +10,6 @@ from datetime import datetime
 
 model = ConcreteModel()
 
-
-
 # Loading all variables from input data
 (set_time,set_options,dict_dem,dict_irradiation_full_pv_area,dict_capacity_factor,dict_max_capacity,
 dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv)=read_data()
@@ -39,6 +37,9 @@ model.irradiation_full_pv_area=Param(model.time,initialize=dict_irradiation_full
 #Vaiables
 model.supply = Var(model.time, model.options, within=NonNegativeReals,doc='Amount of electricity supplied, per option per timeperiod')
 model.capacity=Var(model.options, bounds=(0,2000),within=NonNegativeReals,doc='Total installed capacity per option')
+model.delta_up=Var(model.time,bounds=(0,30),within =NonNegativeReals,doc='Demand shifted up [kW]')
+model.delta_down=Var(model.time, bounds=(0,30),within=NonNegativeReals,doc='Demand shifted down [kW]')
+model.shifted_demand=Var(model.time, within=NonNegativeReals,doc='Shifted Demand')
 
 #Objective
 def cost_rule(model):
@@ -53,12 +54,27 @@ model.obj = Objective(rule = cost_rule, sense=minimize, doc='minimize total cost
 # model.c1 = Constraint(model.time,model.options,rule=demand_rule, doc='Supply equals demand within sum of all time steps')
 
 # def demand_rule(model,time,option):
-#     return sum(model.supply[time,option] for option in model.options) == model.demand[time] 
+#     return sum(model.supply[time,option] for option in model.options) == model.shifted_demand[time]
+# model.c1 = Constraint(model.time,model.options,rule=demand_rule, doc='Supply equals demand at every timestep with DSM')
+
+# ################
+def demand_rule_1(model,time,option):
+    return sum(model.supply[time,option] for option in model.options) == model.demand[time]+model.delta_up[time]-model.delta_down[time]
+model.c1 = Constraint(model.time,model.options,rule=demand_rule_1, doc='Supply equals demand at every timestep with DSM')
+
+# def demand_rule_2(model,time,option):
+#     return sum(model.supply[time,option] for option in model.options) == model.demand[time]-model.delta_down[time]
+# model.c11 = Constraint(model.time,model.options,rule=demand_rule_2, doc='Supply equals demand at every timestep with DSM')
+
+# # ################
+
+# def demand_rule(model,time,option):
+#     return sum(model.supply[time,option] for option in model.options) == model.demand[time]
 # model.c1 = Constraint(model.time,model.options,rule=demand_rule, doc='Supply equals demand at every timestep')
 
-def demand_rule(model,time,option):
-    return sum(model.supply[time,option] for option in model.options) == model.demand[time] 
-model.c1 = Constraint(model.charging_time,model.options,rule=demand_rule, doc='Supply equals demand at charging times')
+# def demand_rule(model,time,option):
+#     return sum(model.supply[time,option] for option in model.options) == model.demand[time] 
+# model.c1 = Constraint(model.charging_time,model.options,rule=demand_rule, doc='Supply equals demand at charging times')
 
 def production_rule(model,time,option):
     return model.capacity_factor[time,option]* model.capacity[option] >= model.supply[time,option]
@@ -67,6 +83,14 @@ model.c2 = Constraint(model.time,model.options,rule=production_rule, doc='Supply
 def max_capacity_rule(model,option):
     return model.capacity[option] <= model.max_capacity[option]
 model.c3 = Constraint(model.options,rule=max_capacity_rule, doc='Installed capacity is smaller or equal maximum capacity')
+
+def dsm_rule(model,time):
+    return sum(model.delta_up[time] for time in model.time)==sum(model.delta_down[time] for time in model.time)
+model.c4 = Constraint(model.time,rule=dsm_rule, doc='Sum of upshifts equals downshifts')   
+
+def shifted_demand_rule(model,time):
+    return model.shifted_demand[time]==model.demand[time]+model.delta_up[time]-model.delta_down[time]
+model.c5 = Constraint(model.time,rule=shifted_demand_rule, doc='Shifted demand defined by upshifts and downshifts') 
 
 # Disjunction (to encure that only ONE option is chosen)
 create_disjuction(model=model)
@@ -97,30 +121,30 @@ print('Sum supply Grid_Only',sum(model.supply[t,'Grid_Only'].value for t in mode
 print('Sum supply PV',sum(model.supply[t,'PV'].value for t in model.time))
 print('Sum supply Pv_Contractor',sum(model.supply[t,'Pv_Contractor'].value for t in model.time))
 
-print('Supply Grid_Only in hour 1:',model.supply[1,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[2,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[3,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[4,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[5,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[6,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[7,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[8,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[9,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[10,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[11,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[12,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[13,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[14,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[15,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[16,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[17,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[18,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[19,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[20,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[21,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[22,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[23,'Grid_Only'].value,'kW')
-print('Supply Grid_Only in hour 1:',model.supply[24,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[1,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[2,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[3,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[4,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[5,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[6,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[7,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[8,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[9,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[10,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[11,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[12,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[13,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[14,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[15,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[16,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[17,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[18,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[19,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[20,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[21,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[22,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[23,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:',model.supply[24,'Grid_Only'].value,'kW')
 
 
 
@@ -133,6 +157,3 @@ print('termination_condition: ', termination_condition)
 print('status: ', status)
 
 
-# fig, ax = plt.subplots()
-# ax.plot(model.time,value(model.supply[t,'Grid_Only'] for t in model.time))
-# plt.show()

@@ -43,6 +43,16 @@ def read_data():
     for key in dict_capacity_factor_var_supply:
         dict_capacity_factor_var_supply[key] = dict_capacity_factor_var_supply[key] *param_specific_area_pv
 
+    # capacity factor is limited to 1
+    for key,value in dict_capacity_factor_var_supply.items():
+        if value>1:
+            dict_capacity_factor_var_supply[key] = 1    
+
+    for key in dict_capacity_factor_var_supply:
+        if dict_capacity_factor_var_supply[key]>1:
+            dict_capacity_factor_var_supply[key]==1
+    #dict_capacity_factor_var_supply[key]=key
+
     # capacity factor of grid is given as constant value
     dict_capacity_factor_fix_supply= dict()
     for idx1 in set_time :
@@ -71,7 +81,9 @@ def read_data():
     return (set_time,set_options,dict_dem,dict_irradiation_full_pv_area,dict_capacity_factor,dict_max_capacity,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv)
 
 set_time,set_options,dict_dem,dict_irradiation_full_pv_area,dict_capacity_factor,dict_max_capacity,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv=read_data()
-print('dict_irradiation_full_pv_area: ', dict_irradiation_full_pv_area)
+print('dict_capacity_factor: ', dict_capacity_factor)
+#print('dict_capacity_factor: ', dict_capacity_factor)
+# print('dict_irradiation_full_pv_area: ', dict_irradiation_full_pv_area)
 #print('dict_irradiation_full_pv_area: ', dict_irradiation_full_pv_area)
 #print('set_options: ', set_options)
 # print('dict_dem: ', dict_dem)
@@ -117,3 +129,5 @@ def define_charging_time():
 # print('df_select: ', df_select)
 # set_time = dict.fromkeys(df_select.index,0)
 # print('set_time: ', set_time)
+
+
