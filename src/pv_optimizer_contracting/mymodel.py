@@ -6,7 +6,7 @@ from disjunction import *
 import matplotlib
 import matplotlib.pyplot as plt
 from datetime import datetime
-
+from pprint import pprint
 
 model = ConcreteModel()
 
@@ -33,40 +33,58 @@ model.max_capacity = Param(model.options,initialize =dict_max_capacity,
                         doc='Maximum capacity that can be installed per option, for options with PV it is limited by the area of the roof [kW]')
 model.irradiation_full_pv_area=Param(model.time,initialize=dict_irradiation_full_pv_area,
                         doc='Solar irradiation on the total possible PV area [kW]')
+model.weight = Param(initialize=float(8760) / (len(model.time)), doc='Pre-factor for variable costsfor an annual result')                        
+
 
 #Vaiables
 model.supply = Var(model.time, model.options, within=NonNegativeReals,doc='Amount of electricity supplied, per option per timeperiod')
 model.capacity=Var(model.options, bounds=(0,2000),within=NonNegativeReals,doc='Total installed capacity per option')
-model.delta_up=Var(model.time,bounds=(0,30),within =NonNegativeReals,doc='Demand shifted up [kW]')
-model.delta_down=Var(model.time, bounds=(0,30),within=NonNegativeReals,doc='Demand shifted down [kW]')
+model.delta_up=Var(model.time,bounds=(0,22),within =NonNegativeReals,doc='Demand shifted up [kW]')
+model.delta_down=Var(model.time, bounds=(0,22),within=NonNegativeReals,doc='Demand shifted down [kW]')
 model.shifted_demand=Var(model.time, within=NonNegativeReals,doc='Shifted Demand')
+#var_cost=Var(model.time, model.options, within=NonNegativeReals)
 
-#Objective
+##Objective
 def cost_rule(model):
-    return sum(model.supply[time, option] * model.price_elec[option] + model.capacity[option] * model.price_invest[option]*model.annuity
-    for time in model.time 
-    for option in model.options)
+    return sum(model.supply[time, option] * model.price_elec[option] * model.weight for time in model.time for option in model.options) + \
+    sum(model.capacity[option] * model.price_invest[option] * model.annuity.value for option in model.options) 
 model.obj = Objective(rule = cost_rule, sense=minimize, doc='minimize total costs')
+
+
+
+
+# def cost_rule(model):
+#     return sum(var_cost*365+ model.capacity[option] * model.price_invest[option]*model.annuity
+#     for time in model.time 
+#     for option in model.options)
+# model.obj = Objective(rule = cost_rule, sense=minimize, doc='minimize total costs')
+
+# def var_cost_rule(model):
+#     return sum(model.supply[time, option] * model.price_elec[option]
+#     for time in model.time 
+#     for option in model.options)==var_cost
+# model.c0 = Constraint(model.time,model.options,rule = var_cost_rule,  doc='minimize total costs')
+
 
 ## Constraints
 # def demand_rule(model,time,option):
 #     return sum(model.supply[time,option] for option in model.options for time in model.time) == sum(model.demand[time] for time in model.time)
 # model.c1 = Constraint(model.time,model.options,rule=demand_rule, doc='Supply equals demand within sum of all time steps')
 
-# def demand_rule(model,time,option):
-#     return sum(model.supply[time,option] for option in model.options) == model.shifted_demand[time]
-# model.c1 = Constraint(model.time,model.options,rule=demand_rule, doc='Supply equals demand at every timestep with DSM')
+def demand_rule(model,time,option):
+    return sum(model.supply[time,option] for option in model.options) == model.shifted_demand[time]
+model.c1 = Constraint(model.time,model.options,rule=demand_rule, doc='Supply equals demand at every timestep with DSM')
 
 # ################
-def demand_rule_1(model,time,option):
-    return sum(model.supply[time,option] for option in model.options) == model.demand[time]+model.delta_up[time]-model.delta_down[time]
-model.c1 = Constraint(model.time,model.options,rule=demand_rule_1, doc='Supply equals demand at every timestep with DSM')
+# def demand_rule_1(model,time,option):
+#     return sum(model.supply[time,option] for option in model.options) == model.demand[time]+model.delta_up[time]-model.delta_down[time]
+# model.c1 = Constraint(model.time,model.options,rule=demand_rule_1, doc='Supply equals demand at every timestep with DSM')
 
 # def demand_rule_2(model,time,option):
 #     return sum(model.supply[time,option] for option in model.options) == model.demand[time]-model.delta_down[time]
 # model.c11 = Constraint(model.time,model.options,rule=demand_rule_2, doc='Supply equals demand at every timestep with DSM')
 
-# # ################
+# ################
 
 # def demand_rule(model,time,option):
 #     return sum(model.supply[time,option] for option in model.options) == model.demand[time]
@@ -92,8 +110,13 @@ def shifted_demand_rule(model,time):
     return model.shifted_demand[time]==model.demand[time]+model.delta_up[time]-model.delta_down[time]
 model.c5 = Constraint(model.time,rule=shifted_demand_rule, doc='Shifted demand defined by upshifts and downshifts') 
 
+def shifted_demand_equal_original_demand_rule(model,time):
+    return sum(model.shifted_demand[time]for time in model.time)==sum(model.demand[time]for time in model.time)
+model.c6 = Constraint(model.time,rule=shifted_demand_equal_original_demand_rule, doc='Shifted demand defined by upshifts and downshifts') 
+
+ 
 # Disjunction (to encure that only ONE option is chosen)
-create_disjuction(model=model)
+create_disjunction(model=model)
 model.option_binary_var=create_boolean_var(model=model) 
 TransformationFactory('core.logical_to_linear').apply_to(model)
 TransformationFactory('gdp.bigm').apply_to(model)#
@@ -105,22 +128,23 @@ results=opt.solve(model)
 update_boolean_vars_from_binary(model=model) #update binary variable after solving 
 model.option_binary_var.display() #see which option is chosen
 #
-print('Total Cost:',model.obj(), '€')
+print('Total Cost:',round(model.obj()), 'Total annual costs')
 #print('Supply Grid_Only in hour 1:',model.supply['1899-12-31 00:00:00','Grid_Only'].value,'kW')
 # print('Supply Grid_Only in hour 1:',model.supply[Timestamp('2021-01-01 21:00:00'), 'Grid_Only'],'kW')
-print('Supply Grid_Only in hour 1:',model.supply[1,'Grid_Only'].value,'kW')
+#print('Supply Grid_Only in hour 1:',model.supply[1,'Grid_Only'].value,'kW')
 # print('Supply Grid_Only in hour 2:',model.supply[2,'Grid_Only'].value,'kW')
 # print('Supply PV in hour 1:', model.supply[1,'PV'].value,'kW')
 # print('Supply PV in hour 2:', model.supply[2,'PV'].value,'kW')
 # print('Supply Pv_Contractor in hour 1:',model.supply[1,'Pv_Contractor'].value,'kW')
 # print('Supply Pv_Contractor in hour 2:',model.supply[2,'Pv_Contractor'].value,'kW')
-print('Capacity Grid',model.capacity['Grid_Only'].value,'kW')
-print('Capacity PV',model.capacity['PV'].value,'kW')
-print('Capacity Pv_Contractor',model.capacity['Pv_Contractor'].value,'kW')
-print('Sum supply Grid_Only',sum(model.supply[t,'Grid_Only'].value for t in model.time))
-print('Sum supply PV',sum(model.supply[t,'PV'].value for t in model.time))
-print('Sum supply Pv_Contractor',sum(model.supply[t,'Pv_Contractor'].value for t in model.time))
+print('Capacity Grid',round(model.capacity['Grid_Only'].value),'kW')
+print('Capacity PV',round(model.capacity['PV'].value),'kW')
+print('Capacity Pv_Contractor',round(model.capacity['Pv_Contractor'].value),'kW')
 
+print('Sum supply Grid_Only',sum(model.supply[t,'Grid_Only'].value for t in model.time),'kWh')
+print('Sum supply PV',round(sum(model.supply[t,'PV'].value for t in model.time)),'kWh')
+print('Sum supply Pv_Contractor',round(sum(model.supply[t,'Pv_Contractor'].value for t in model.time)),'kWh')
+#print('Sum supply Pv_Contractor',sum(model.supply[t].value for t in model.time)
 # print('Supply Grid_Only in hour 1:',model.supply[1,'Grid_Only'].value,'kW')
 # print('Supply Grid_Only in hour 1:',model.supply[2,'Grid_Only'].value,'kW')
 # print('Supply Grid_Only in hour 1:',model.supply[3,'Grid_Only'].value,'kW')
@@ -145,11 +169,13 @@ print('Sum supply Pv_Contractor',sum(model.supply[t,'Pv_Contractor'].value for t
 # print('Supply Grid_Only in hour 1:',model.supply[22,'Grid_Only'].value,'kW')
 # print('Supply Grid_Only in hour 1:',model.supply[23,'Grid_Only'].value,'kW')
 # print('Supply Grid_Only in hour 1:',model.supply[24,'Grid_Only'].value,'kW')
+# print('Supply Grid_Only in hour 1:', sum(model.shifted_demand[t].value for t in model.time),'kW')
 
-
-
+print('Sum shifted demand:', round(sum(model.shifted_demand[t].value for t in model.time)),'kWh')
+print('Sum original demand:', round(sum(model.demand[t] for t in model.time)),'kWh')
+print('Model weight:', model.weight.value)
 # instance = model.create_instance()
-#model.pprint()
+# model.pprint()
 
 status = results.solver.status
 termination_condition = results.solver.termination_condition

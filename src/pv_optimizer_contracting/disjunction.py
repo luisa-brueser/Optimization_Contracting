@@ -1,7 +1,7 @@
 from pyomo.environ import *
 from pyomo.gdp import Disjunct, Disjunction
 
-def create_disjuction(model):
+def create_disjunction(model):
     '''
     Creates disjuncts for each option, that ensure that supply gets delivered exclusively by the option chosen. 
     If binary variable is True for one option, then the possible capacity of all other options is set to zero.

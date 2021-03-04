@@ -1,6 +1,7 @@
 
 src/pv_optimizer_contracting/~$data_input.xlsx
 archive/
+graphs_results/
 .vscode/
 src/pv_optimizer_contracting.egg-info
 src/pv_optimizer_contracting/_pycache_
