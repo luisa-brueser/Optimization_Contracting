@@ -4,11 +4,11 @@ import numpy as np
 import pyam
 from pyam.plotting import OUTSIDE_LEGEND
 import matplotlib.pyplot as plt
-from mymodel import model
-from pprint import pprint 
+from pv_optimizer_contracting.mymodel import model
+from pprint import pprint
 
-output_file_path = Path(__file__).parent / 'data_output.csv'
-#output_file_path_demand = Path(__file__).parent / 'data_output_demand.csv'
+output_file_path = Path(__file__).parent / "data_output.csv"
+# output_file_path_demand = Path(__file__).parent / 'data_output_demand.csv'
 
 # df = pyam.IamDataFrame(output_file_path)
 # df
@@ -25,29 +25,80 @@ output_file_path = Path(__file__).parent / 'data_output.csv'
 # plt.show()
 # print(data.timeseries())
 
-#data={'Model':['Contracting_model'],'Scenario':['Contracting_1'],'Region':['Vienna'],'Variable':['Supply_PV'],'Unit':['kW'],'0':[0],'4':[0],'8':[4],'12':[6],'16':[8],'20':[2],'24':[0]}
-results=dict.fromkeys(model.options)
+# data={'Model':['Contracting_model'],'Scenario':['Contracting_1'],'Region':['Vienna'],'Variable':['Supply_PV'],'Unit':['kW'],'0':[0],'4':[0],'8':[4],'12':[6],'16':[8],'20':[2],'24':[0]}
+results_supply = dict.fromkeys(model.options)
+# results["demand"] = None
+# results["shifted_demand"] = None
+# print("model.demand: ", model.demand)
+# print("model.demand: ", model.shifted_demand)
 
-data_template={'Model':['Contracting_model'],'Scenario':['Contracting_1'],'Region':[model.options[1]],'Variable':['Supply'],'Unit':['kW']}
+results_demand = {
+    "demand": None,
+    "shifted_demand": None,
+}
 
-for key,value in results.items():
-    results[key]=data_template
+
+data_template = {
+    "Model": "Contracting_model",
+    "Scenario": "Contracting_1",
+    "Region": None,
+    "Variable": None,
+    "Unit": "kW",
+}
+
+for key in results_demand.keys():
+    results_demand[key] = data_template.copy()
+    # results_demand["demand"]["Variable"] = "Shifted Demand"
+    # results_demand["shifted_demand"]["Variable"] = "Demand"
+
+for time in model.time:
+    x = {time: model.demand[time]}
+    # print("x: ", x)
+    results_demand["demand"].update(x)
+    
+
+
+for time in model.time:
+    d = {time: model.shifted_demand[time].value}
+    results_demand["shifted_demand"].update(d)
+
+
+for key in results_supply.keys():
+    results_supply[key] = data_template
+    results_supply[key]["Variable"] = "Supply"
+
 for option in model.options:
+    results_supply[option]["Region"] = option    
     for time in model.time:
-        d={time:[model.supply[time,option].value]}
-        d.update(results[option])
-#         # pd.DataFrame.from_dict(data=results[option])
+        d = {time: model.supply[time, option].value}
+        results_supply[option].update(d)
+        
+
+        # pprint(d)
+# pprint(results_supply)
+
+# df = pd.DataFrame.for(results_supply)
+
+# for
+new = {**results_supply, **results_demand}
+df = pd.DataFrame.from_dict(data=new).T
+
+# df_demand = pd.DataFrame.from_dict(data=demand)
+print("df: ", df)
+
+with open("test.csv", "w") as file:
+    # txt.write("string")
+    df.to_csv(file)
 
 # for option in model.options:
 #     for time in model.time:
 #         d={time:[model.supply[time,option].value]}
-        # d.update(results[option])
-        # pd.DataFrame.from_dict(data=results[option])
+# d.update(results[option])
+# pd.DataFrame.from_dict(data=results[option])
 
 
-
-new={**data_template, **d}
-pprint(new)
+# pprint(new)
+# pprint(new)
 ##########
 # for key,value in results.items():
 #     results[key]=data_template
@@ -65,8 +116,7 @@ pprint(new)
 # pprint(data_results)
 
 
-
-#result_supply_grid,result_supply_contracting,result_supply_PV
+# result_supply_grid,result_supply_contracting,result_supply_PV
 
 # results={k:v for k,v in model.options[k}
 
@@ -74,12 +124,11 @@ pprint(new)
 # pprint(results)
 # for option in results:
 #     data_results=pd.DataFrame.from_dict(data=results)
-  
+
 
 # print('data_results: ', data_results)
 
 # df = pyam.IamDataFrame(output_file_path)
-
 
 
 # model, scenario = 'Contracting_model', 'Contracting_1'
@@ -98,8 +147,6 @@ pprint(new)
 # plt.show()
 
 # print(data.timeseries())
-
-
 
 
 # data_supply_grid={'Model':['Contracting_model'],'Scenario':['Contracting_1'],'Region':[model.options[1]],'Variable':['Supply'],'Unit':['kW'],
@@ -170,5 +217,3 @@ pprint(new)
 # plt.show()
 
 # print(data.timeseries())
-
-
