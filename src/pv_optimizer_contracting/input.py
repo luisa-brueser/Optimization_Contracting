@@ -87,7 +87,7 @@ set_time,set_options,dict_dem,dict_irradiation_full_pv_area,dict_capacity_factor
 # print('set_time: ', set_time)
 # print('dict_capacity_factor: ', dict_capacity_factor)
 # print('dict_max_capacity: ', dict_max_capacity)
-
+print(param_annuity)
 
 def define_charging_time():
     set_df = pd.read_excel(io=input_file_path, sheet_name='Sets')

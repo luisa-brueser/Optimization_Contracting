@@ -18,7 +18,7 @@ set_charging_time=define_charging_time()
 # Sets
 model.time = Set(initialize = set_time.keys(),doc='time in timesteps of 1h')
 model.charging_time = Set(initialize = set_charging_time.keys(),doc='Charging time (after 4pm) in timesteps of 1h')
-model.options = Set(initialize = set_options.keys(),doc='Supply by grid only or contractor financed PV or PV')
+model.options = Set(initialize = set_options.keys(),doc='Elements of the model financed by self-investment OR by a contractor')
 
 # Parameters
 model.annuity=Param(initialize = param_annuity,mutable=False,doc='Annuity factor to convert investment costs in annual costs')
