@@ -83,8 +83,20 @@ def read_demand_data():
     dict_demand_heating = demand_df['Heating'].to_dict()
     return(dict_demand_charging,dict_demand_hot_water,dict_demand_electricity,dict_demand_heating)
 
-(dict_demand_charging,dict_demand_hot_water,dict_demand_electricity,dict_demand_heating)=read_demand_data()
-print('dict_demand_hot_water: ', dict_demand_hot_water)
+# (dict_demand_charging,dict_demand_hot_water,dict_demand_electricity,dict_demand_heating)=read_demand_data()
+# print('dict_demand_hot_water: ', dict_demand_hot_water)
+
+def read_weather_data():
+    '''
+    Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
+    '''
+    weather_df = pd.read_excel(io=input_file_path, sheet_name='Irradiation and temperatur').reset_index().dropna().set_index('Time')
+    dict_irradiation = weather_df['Irradiation'].to_dict()
+    dict_temperature = weather_df['Temperature'].to_dict()
+    return(dict_irradiation,dict_temperature)
+
+# (dict_irradiation,dict_temperature)=read_weather_data()
+# print('dict_irradiation: ', dict_irradiation)
 
 # (dict_price_invest,dict_price_service,dict_price_connection,dict_price_fuel,dict_price_invest_contractor,dict_price_service_contractor, \
 #     dict_price_connection_contractor,dict_price_fuel_contractor,dict_price_invest_default,dict_price_service_default, \
