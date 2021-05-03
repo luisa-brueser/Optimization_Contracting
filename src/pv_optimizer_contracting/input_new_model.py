@@ -72,6 +72,19 @@ def read_cost_data():
     dict_price_connection_contractor,dict_price_fuel_contractor,dict_price_invest_default,dict_price_service_default, \
     dict_price_connection_default,dict_price_fuel_default,dict_price_feedin_default)
 
+def read_demand_data():
+    '''
+    Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
+    '''
+    demand_df = pd.read_excel(io=input_file_path, sheet_name='Demand').reset_index().dropna().set_index('Time')
+    dict_demand_charging = demand_df['Car'].to_dict()
+    dict_demand_hot_water = demand_df['DHW'].to_dict()
+    dict_demand_electricity = demand_df['Electricity household'].to_dict()
+    dict_demand_heating = demand_df['Heating'].to_dict()
+    return(dict_demand_charging,dict_demand_hot_water,dict_demand_electricity,dict_demand_heating)
+
+(dict_demand_charging,dict_demand_hot_water,dict_demand_electricity,dict_demand_heating)=read_demand_data()
+print('dict_demand_hot_water: ', dict_demand_hot_water)
 
 # (dict_price_invest,dict_price_service,dict_price_connection,dict_price_fuel,dict_price_invest_contractor,dict_price_service_contractor, \
 #     dict_price_connection_contractor,dict_price_fuel_contractor,dict_price_invest_default,dict_price_service_default, \
