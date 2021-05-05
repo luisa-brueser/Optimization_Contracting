@@ -1,32 +1,81 @@
-from pyomo.environ import *
-from pyomo.gdp import Disjunct, Disjunction
-import pandas as pd
-from input import *
-from disjunction import *
-import matplotlib
-import matplotlib.pyplot as plt
 from datetime import datetime
 from pprint import pprint
+
+import matplotlib
+import matplotlib.pyplot as plt
+import pandas as pd
+from pyomo.environ import *
+from pyomo.gdp import Disjunct, Disjunction
+
+from disjunction import *
+from input_new_model import *
 
 model = ConcreteModel()
 
 # Loading all variables from input data
-(set_time,set_options,dict_dem,dict_irradiation_full_pv_area,dict_capacity_factor,dict_max_capacity,
-dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv)=read_data()
-set_charging_time=define_charging_time()
+(set_time,set_finance_options,set_technologies,set_default_technologies,set_costs))=read_set_data()
+(param_annuity,param_area_roof,param_capacity_density_pv,param_specific_DHW_demand,\
+    param_powerflow_max_battery,param_powerflow_max_battery_car,param_capacity_car,param_efficiency_battery,param_efficiency_battery_car,\
+    param_efficiency_gas,param_number_cars,\
+    param_number_households,param_simultaneity)=read_gerneral_data()
+(dict_price_invest,dict_cost_service,dict_price_connection,dict_price_fuel,dict_price_invest_contractor,dict_cost_service_contractor, \
+    dict_price_connection_contractor,dict_price_fuel_contractor,dict_price_invest_default,dict_cost_service_default, \
+    dict_price_connection_default,dict_price_fuel_default,dict_price_feedin_default)=read_cost_data()
+(dict_demand_charging,dict_demand_hot_water,dict_demand_electricity,dict_demand_heating)=read_demand_data()
+(dict_irradiation,dict_temperature)=read_weather_data()
+(dict_COP)=calculate_COP()
 
 # Sets
 model.time = Set(initialize = set_time.keys(),doc='time in timesteps of 1h')
-model.charging_time = Set(initialize = set_charging_time.keys(),doc='Charging time (after 4pm) in timesteps of 1h')
-model.options = Set(initialize = set_options.keys(),doc='Elements of the model financed by self-investment OR by a contractor')
+model.finance_options = Set(initialize = set_finance_options.keys(),doc='Elements of the model financed by self-investment OR by a contractor')
+model.technologies = Set(initialize = set_technologies.keys(),doc='Technologies/Elements that can be financed e.g, PV, HP etc.')
+model.default = Set(initialize = set_default_technologies.keys(),doc='Default elements that already exist e.g. electricity, gas, DH')
 
-# Parameters
+
+## Parameters
+#General Parameters
 model.annuity=Param(initialize = param_annuity,mutable=False,doc='Annuity factor to convert investment costs in annual costs')
-model.area_roof=Param(initialize = param_area_roof,mutable=False,within=Any,doc='Area of the roof [m2], determines limit of PV capacity')
-model.specific_area_pv=Param(initialize = param_specific_area_pv,mutable=False,within=Any,doc='Capacity intensity of PV [kWp/m2]')
+model.area_roof=Param(initialize = param_area_roof,mutable=False,within=Any,doc='Area of the roof [m2], determines limit of PV and ST capacity')
+model.capacity_density_pv=Param(initialize = param_capacity_density_pv,mutable=False,within=Any,doc='Capacity density of PV [kWp/m2]')
+model.specific_DHW_demand = Param(minitialize = param_specific_DHW_demand,,mutable=False,within=Any,doc='Demand of hot water per Person')
+model.cop = Param(model.time, initialize = dict_COP,doc='Reduced COP per timestep')
+model.specific_DHW_demand = Param(minitialize = param_specific_DHW_demand,mutable=False,within=Any,doc='Demand of hot water per Person')
+model.powerflow_max_battery= Param(minitialize = param_powerflow_max_battery, mutable=False,within=Any,doc='Maximum powerflow into and out of stationary battery')
+model.powerflow_max_battery_car= Param(minitialize = param_powerflow_max_battery_car, mutable=False,within=Any,doc='Maximum powerflow into and out of car battery')
+model.capacity_car= Param(minitialize = param_capacity_car, mutable=False,within=Any,doc='Capacity battery of chosen car model')
+model.efficiency_battery= Param(minitialize = param_efficiency_battery, mutable=False,within=Any,doc='Efficiency of stationary battery')
+model.efficiency_battery_car= Param(minitialize = param_efficiency_battery_car, mutable=False,within=Any,doc='Efficiency of car battery')
+model.efficiency_gas= Param(minitialize = param_efficiency_gas, mutable=False,within=Any,doc='Efficiency of decentralized gas boilers')
+model.number_cars= Param(minitialize = param_number_cars, mutable=False,within=Any,doc='Number of charging stations (or cars) chosen')
+model.number_households= Param(minitialize = param_number_households, mutable=False,within=Any,doc='Number of households')
+model.number_households= Param(minitialize = param_number_households, mutable=False,within=Any,doc='Number of households')
+model.simultaneity= Param(minitialize = param_simultaneity, mutable=False,within=Any,doc='Simultaneity factor for hot water usage')
+
+#Cost Parameters
+model.price_invest = Param(model.technologies, initialize = dict_price_invest,doc='Prices for initial investment')
+model.cost_service = Param(model.technologies, initialize = dict_cost_service,doc='Annual service and maintenance Costs (lump-sum costs)')
+model.price_connection = Param(model.technologies, initialize = dict_price_connection,doc='Annual connection price per kW')
+model.price_fuel = Param(model.technologies, initialize = dict_price_fuel,doc='Fuel price per kWh')
+model.price_invest_contractor = Param(model.technologies, initialize = dict_price_invest_contractor,doc='Prices for initial investment by contractor')
+model.cost_service_contractor = Param(model.technologies, initialize = dict_cost_service_contractor,doc='Annual service and maintenance Costs (lump-sum costs) by contractor'')
+model.price_connection_contractor = Param(model.technologies, initialize = dict_price_connection_contractor,doc='Annual connection price per kW by contractor'')
+model.price_fuel_contractor = Param(model.technologies, initialize = dict_price_fuel_contractor,doc='Fuel price per kWh by contractor'')
+model.price_invest_default = Param(model.technologies, initialize = dict_price_invest_default,doc='Prices for initial investment for default elements')
+model.cost_service_default = Param(model.technologies, initialize = dict_cost_service_default,doc='Annual service and maintenance Costs (lump-sum costs) for default elements')
+model.price_connection_default = Param(model.technologies, initialize = dict_price_connection_default,doc='Annual connection price per kW for default elements')
+model.price_fuel_default = Param(model.technologies, initialize = dict_price_fuel_default,doc='Fuel price per kWh for default elements')
+model.price_feedin_default = Param(model.technologies, initialize = dict_price_feedin_default,doc='Feedin priced for default elements')
+
+#Demand Parameters
+
+(dict_demand_charging,dict_demand_hot_water,dict_demand_electricity,dict_demand_heating)=read_demand_data()
+(dict_irradiation,dict_temperature)=read_weather_data()
+(dict_COP)=calculate_COP()
+
+
 model.demand = Param(model.time, initialize = dict_dem,doc='Demand per timestep')
 model.price_elec = Param(model.options, initialize = dict_price_elec, doc='Prices for electricity, per option per timestep')
-model.price_invest = Param(model.options, initialize = dict_price_invest,doc='Prices for initial investment, per option')
+)
 model.capacity_factor = Param(model.time,model.options,initialize =dict_capacity_factor,
                         doc='Maximum available electricity supply per unit of installed capacity, per option per timestep [kW/kWp]')
 model.max_capacity = Param(model.options,initialize =dict_max_capacity,

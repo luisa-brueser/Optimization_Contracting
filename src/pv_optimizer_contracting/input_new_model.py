@@ -15,10 +15,11 @@ def read_set_data():
 
     set_df = pd.read_excel(io=input_file_path, sheet_name='Sets')
     set_time = dict.fromkeys(set_df['Time'].dropna(),0)
-    set_finance_options= dict.fromkeys(set_df['Options'].dropna(),0)
+    set_finance_options= dict.fromkeys(set_df['Finance Options'].dropna(),0)
     set_technologies = dict.fromkeys(set_df['Elements'].dropna(),0)
-    set_default = dict.fromkeys(set_df['Default'].dropna(),0)
-    return (set_time,set_finance_options,set_technologies,set_default)
+    set_default_technologies = dict.fromkeys(set_df['Default Elements'].dropna(),0)
+    set_costs = dict.fromkeys(set_df['Cost type'].dropna(),0)
+    return (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs)
 
 
 def read_gerneral_data():
@@ -29,11 +30,10 @@ def read_gerneral_data():
     general_df = pd.read_excel(io=input_file_path, sheet_name='General Data').drop('Abbreviation', axis=1).set_index('Parameter')   
     param_interest_rate= general_df.at['Interest rate','Value']
     param_depreciation= general_df.at['Depreciation time','Value']
+    param_annuity=(((1+param_interest_rate)**param_depreciation)*param_interest_rate)/(((1+param_interest_rate)**param_depreciation)-1)
     param_area_roof=general_df.at['Area Roof','Value']
-    param_specific_area_pv=general_df.at['Area PV','Value']
-    param_DOW_demand=general_df.at['DOW p.P.','Value']
-    param_reduction_cop=general_df.at['Reduction COP','Value']
-    param_temp_heating=general_df.at['Temperature heating','Value']
+    param_capacity_density_pv=general_df.at['Area PV','Value']
+    param_specific_DHW_demand=general_df.at['DOW p.P.','Value']
     param_powerflow_max_battery=general_df.at['Maximum Powerflow Battery','Value']
     param_powerflow_max_battery_car=general_df.at['Maximum Powerflow Battery Car','Value']
     param_capacity_car=general_df.at['Capacity Battery Car','Value']
@@ -43,34 +43,39 @@ def read_gerneral_data():
     param_number_chargingstations=general_df.at['Number of charging stations','Value']
     param_number_households=general_df.at['Number of household','Value']
     param_simultaneity=general_df.at['Simultaneity factor','Value']
-    return (param_interest_rate,param_depreciation,param_area_roof,param_specific_area_pv,param_DOW_demand,param_reduction_cop,param_temp_heating,param_powerflow_max_battery,param_powerflow_max_battery_car,param_efficiency_gas,param_number_chargingstations,param_number_households,param_simultaneity)
+    return (param_annuity,param_area_roof,param_capacity_density_pv,param_specific_DHW_demand,\
+    param_powerflow_max_battery,param_powerflow_max_battery_car,param_capacity_car,param_efficiency_battery,param_efficiency_battery_car,\
+    param_efficiency_gas,param_number_chargingstations, param_number_households,param_simultaneity)
+
+# (param_annuity,param_area_roof,param_capacity_density_pv,param_specific_DHW_demand,\
+#     param_powerflow_max_battery,param_powerflow_max_battery_car,param_capacity_car,param_efficiency_battery,param_efficiency_battery_car,\
+#     param_efficiency_gas,param_number_chargingstations,\
+#     param_number_households,param_simultaneity)=read_gerneral_data()
+# print('param_annuity: ', param_annuity)
 
 def read_cost_data():
     '''
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
     '''
-    cost_without_contractor_df = pd.read_excel(io=input_file_path, sheet_name='Costs without contractor ').set_index(['Elements']).drop(['Unit'])
-    dict_price_invest = cost_without_contractor_df['Investment Price'].to_dict()
-    dict_price_service = cost_without_contractor_df['Service Cost'].to_dict()
-    dict_price_connection = cost_without_contractor_df['Connection Price'].to_dict()
-    dict_price_fuel = cost_without_contractor_df['Fuel Price'].to_dict()
+    set_df = pd.read_excel(io=input_file_path, sheet_name='Sets')
+    set_finance_options= dict.fromkeys(set_df['Finance Options'].dropna(),0)
+    set_technologies = dict.fromkeys(set_df['Elements'].dropna(),0)
+    set_costs = dict.fromkeys(set_df['Cost type'].dropna(),0)
 
-    cost_with_contractor_df = pd.read_excel(io=input_file_path, sheet_name='Costs with contractor').set_index(['Elements']).drop(['Unit'])
-    dict_price_invest_contractor = cost_with_contractor_df['Investment Price'].to_dict()
-    dict_price_service_contractor = cost_with_contractor_df['Service Cost'].to_dict()
-    dict_price_connection_contractor = cost_with_contractor_df['Connection Price'].to_dict()
-    dict_price_fuel_contractor = cost_with_contractor_df['Fuel Price'].to_dict()
+    cost_new_df = pd.read_excel(io=input_file_path, sheet_name='Costs new investments').dropna().set_index(['Finance Options','Elements'])._drop_axis('Unit',0,level=1)
 
-    cost_default_df = pd.read_excel(io=input_file_path, sheet_name='Costs of default system').set_index(['Elements']).drop(['Unit'])
-    dict_price_invest_default = cost_default_df['Investment Price'].to_dict()
-    dict_price_service_default = cost_default_df['Service Cost'].to_dict()
-    dict_price_connection_default = cost_default_df['Connection Price'].to_dict()
-    dict_price_fuel_default = cost_default_df['Fuel Price'].to_dict()
-    dict_price_feedin_default = cost_default_df['Feedin Price'].to_dict()
+    dict_cost_new = dict()
+    for idx1 in set_finance_options :
+        for idx2 in set_technologies :
+            for idx3 in set_costs: 
+                dict_cost_new [idx1, idx2, idx3] = cost_new_df.loc[(idx1,idx2),idx3]
 
-    return(dict_price_invest,dict_price_service,dict_price_connection,dict_price_fuel,dict_price_invest_contractor,dict_price_service_contractor, \
-    dict_price_connection_contractor,dict_price_fuel_contractor,dict_price_invest_default,dict_price_service_default, \
-    dict_price_connection_default,dict_price_fuel_default,dict_price_feedin_default)
+    
+
+
+    return (dict_cost_new)
+
+
 
 def read_demand_data():
     '''
@@ -96,10 +101,34 @@ def read_weather_data():
     return(dict_irradiation,dict_temperature)
 
 # (dict_irradiation,dict_temperature)=read_weather_data()
+# print('dict_temperature: ', dict_temperature)
+# (param_annuity,param_area_roof,param_capacity_density_pv,param_specific_DHW_demand,param_reduction_cop,\
+#     param_temp_heating,param_powerflow_max_battery,param_powerflow_max_battery_car,param_capacity_car,param_efficiency_battery,param_efficiency_battery_car,\
+#     param_efficiency_gas,param_number_chargingstations,\
+#     param_number_households,param_simultaneity)=read_gerneral_data()
+# print(param_temp_heating)    
+
+def calculate_COP():
+    '''
+    Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
+    '''
+
+    general_df = pd.read_excel(io=input_file_path, sheet_name='General Data').drop('Abbreviation', axis=1).set_index('Parameter')   
+    weather_df = pd.read_excel(io=input_file_path, sheet_name='Irradiation and temperatur').reset_index().dropna().set_index('Time')
+    param_reduction_cop=general_df.at['Reduction COP','Value']
+    param_temp_heating=general_df.at['Temperature heating','Value']
+    dict_COP = weather_df['Temperature'].to_dict()
+    for key in dict_COP:
+            dict_COP[key] = ((dict_COP[key])/(param_temp_heating-dict_COP[key]))*param_reduction_cop
+    return(dict_COP) 
+
+# dict_COP=calculate_COP()
+# print(dict_COP)
+# (dict_irradiation,dict_temperature)=read_weather_data()
 # print('dict_irradiation: ', dict_irradiation)
 
-# (dict_price_invest,dict_price_service,dict_price_connection,dict_price_fuel,dict_price_invest_contractor,dict_price_service_contractor, \
-#     dict_price_connection_contractor,dict_price_fuel_contractor,dict_price_invest_default,dict_price_service_default, \
+# (dict_price_invest,dict_cost_service,dict_price_connection,dict_price_fuel,dict_price_invest_contractor,dict_cost_service_contractor, \
+#     dict_price_connection_contractor,dict_price_fuel_contractor,dict_price_invest_default,dict_cost_service_default, \
 #     dict_price_connection_default,dict_price_fuel_default,dict_price_feedin_default)=read_cost_data()
 # print('dict_price_feedin_default: ', dict_price_feedin_default)
 
@@ -173,13 +202,13 @@ def read_weather_data():
 # print('dict_max_capacity: ', dict_max_capacity)
 
 
-def define_charging_time():
-    set_df = pd.read_excel(io=input_file_path, sheet_name='Sets')
-    set_df.set_index('time',inplace=True)
-    charging_time_idx = [idx for idx in set_df.index if (idx>=16)&(idx<=24)]
-    charging_time_df = set_df.loc[charging_time_idx]
-    set_charging_time = dict.fromkeys(charging_time_df.index,0)
-    return set_charging_time
+# def define_charging_time():
+#     set_df = pd.read_excel(io=input_file_path, sheet_name='Sets')
+#     set_df.set_index('time',inplace=True)
+#     charging_time_idx = [idx for idx in set_df.index if (idx>=16)&(idx<=24)]
+#     charging_time_df = set_df.loc[charging_time_idx]
+#     set_charging_time = dict.fromkeys(charging_time_df.index,0)
+#     return set_charging_time
 
 
 # # ////// 'with timestamps'
@@ -212,3 +241,34 @@ def define_charging_time():
 # print('set_time: ', set_time)
 
 
+# print('set_technologies: ', set_technologies)
+
+
+
+
+
+
+
+
+# cost_without_contractor_df = pd.read_excel(io=input_file_path, sheet_name='Costs without contractor ').set_index(['Elements']).drop(['Unit'])
+#     dict_price_invest = cost_without_contractor_df['Investment Price'].to_dict()
+#     dict_cost_service = cost_without_contractor_df['Service Cost'].to_dict()
+#     dict_price_connection = cost_without_contractor_df['Connection Price'].to_dict()
+#     dict_price_fuel = cost_without_contractor_df['Fuel Price'].to_dict()
+
+#     cost_with_contractor_df = pd.read_excel(io=input_file_path, sheet_name='Costs with contractor').set_index(['Elements']).drop(['Unit'])
+#     dict_price_invest_contractor = cost_with_contractor_df['Investment Price'].to_dict()
+#     dict_cost_service_contractor = cost_with_contractor_df['Service Cost'].to_dict()
+#     dict_price_connection_contractor = cost_with_contractor_df['Connection Price'].to_dict()
+#     dict_price_fuel_contractor = cost_with_contractor_df['Fuel Price'].to_dict()
+
+#     cost_default_df = pd.read_excel(io=input_file_path, sheet_name='Costs of default system').set_index(['Elements']).drop(['Unit'])
+#     dict_price_invest_default = cost_default_df['Investment Price'].to_dict()
+#     dict_cost_service_default = cost_default_df['Service Cost'].to_dict()
+#     dict_price_connection_default = cost_default_df['Connection Price'].to_dict()
+#     dict_price_fuel_default = cost_default_df['Fuel Price'].to_dict()
+#     dict_price_feedin_default = cost_default_df['Feedin Price'].to_dict()
+
+#     return(dict_price_invest,dict_cost_service,dict_price_connection,dict_price_fuel,dict_price_invest_contractor,dict_cost_service_contractor, \
+#     dict_price_connection_contractor,dict_price_fuel_contractor,dict_price_invest_default,dict_cost_service_default, \
+#     dict_price_connection_default,dict_price_fuel_default,dict_price_feedin_default)
