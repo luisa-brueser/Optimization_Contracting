@@ -19,39 +19,22 @@ def read_set_data():
     set_technologies = dict.fromkeys(set_df['Elements'].dropna(),0)
     set_default_technologies = dict.fromkeys(set_df['Default Elements'].dropna(),0)
     set_costs = dict.fromkeys(set_df['Cost type'].dropna(),0)
-    return (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs)
+    set_costs_default= dict.fromkeys(set_df['Cost type default'].dropna(),0)
+    return (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default)
 
 
-def read_gerneral_data():
+def read_general_data():
     '''
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
     '''
-       
-    general_df = pd.read_excel(io=input_file_path, sheet_name='General Data').drop('Abbreviation', axis=1).set_index('Parameter')   
-    param_interest_rate= general_df.at['Interest rate','Value']
-    param_depreciation= general_df.at['Depreciation time','Value']
-    param_annuity=(((1+param_interest_rate)**param_depreciation)*param_interest_rate)/(((1+param_interest_rate)**param_depreciation)-1)
-    param_area_roof=general_df.at['Area Roof','Value']
-    param_capacity_density_pv=general_df.at['Area PV','Value']
-    param_specific_DHW_demand=general_df.at['DOW p.P.','Value']
-    param_powerflow_max_battery=general_df.at['Maximum Powerflow Battery','Value']
-    param_powerflow_max_battery_car=general_df.at['Maximum Powerflow Battery Car','Value']
-    param_capacity_car=general_df.at['Capacity Battery Car','Value']
-    param_efficiency_battery=general_df.at['Efficiency Battery Car','Value']
-    param_efficiency_battery_car=general_df.at['Efficiency Battery Car','Value']
-    param_efficiency_gas=general_df.at['Efficiency Gas Boiler','Value']
-    param_number_chargingstations=general_df.at['Number of charging stations','Value']
-    param_number_households=general_df.at['Number of household','Value']
-    param_simultaneity=general_df.at['Simultaneity factor','Value']
-    return (param_annuity,param_area_roof,param_capacity_density_pv,param_specific_DHW_demand,\
-    param_powerflow_max_battery,param_powerflow_max_battery_car,param_capacity_car,param_efficiency_battery,param_efficiency_battery_car,\
-    param_efficiency_gas,param_number_chargingstations, param_number_households,param_simultaneity)
 
-# (param_annuity,param_area_roof,param_capacity_density_pv,param_specific_DHW_demand,\
-#     param_powerflow_max_battery,param_powerflow_max_battery_car,param_capacity_car,param_efficiency_battery,param_efficiency_battery_car,\
-#     param_efficiency_gas,param_number_chargingstations,\
-#     param_number_households,param_simultaneity)=read_gerneral_data()
-# print('param_annuity: ', param_annuity)
+    general_df = pd.read_excel(io=input_file_path, sheet_name='General Data').drop('Abbreviation', axis=1).set_index('Parameter')
+    dict_general_parameters=general_df['Value'].to_dict()
+
+    annuity_factor=(((1+dict_general_parameters['Interest rate'])**dict_general_parameters['Depreciation time'])*dict_general_parameters['Interest rate'])/ \
+    (((1+dict_general_parameters['Interest rate'])**dict_general_parameters['Depreciation time'])-1)
+
+    return (dict_general_parameters,annuity_factor)
 
 def read_cost_data():
     '''
@@ -60,7 +43,9 @@ def read_cost_data():
     set_df = pd.read_excel(io=input_file_path, sheet_name='Sets')
     set_finance_options= dict.fromkeys(set_df['Finance Options'].dropna(),0)
     set_technologies = dict.fromkeys(set_df['Elements'].dropna(),0)
+    set_default_technologies = dict.fromkeys(set_df['Default Elements'].dropna(),0)
     set_costs = dict.fromkeys(set_df['Cost type'].dropna(),0)
+    set_costs_default= dict.fromkeys(set_df['Cost type default'].dropna(),0)
 
     cost_new_df = pd.read_excel(io=input_file_path, sheet_name='Costs new investments').dropna().set_index(['Finance Options','Elements'])._drop_axis('Unit',0,level=1)
 
@@ -70,11 +55,14 @@ def read_cost_data():
             for idx3 in set_costs: 
                 dict_cost_new [idx1, idx2, idx3] = cost_new_df.loc[(idx1,idx2),idx3]
 
-    
+    cost_default_df = pd.read_excel(io=input_file_path, sheet_name='Costs default system').dropna().set_index('Elements')._drop_axis('Unit',0)
 
+    dict_cost_default = dict()
+    for idx1 in set_default_technologies :
+        for idx2 in set_costs_default :
+            dict_cost_default[idx1, idx2] = cost_default_df.loc[idx1][idx2]
 
-    return (dict_cost_new)
-
+    return (dict_cost_new,dict_cost_default)
 
 
 def read_demand_data():
@@ -88,8 +76,9 @@ def read_demand_data():
     dict_demand_heating = demand_df['Heating'].to_dict()
     return(dict_demand_charging,dict_demand_hot_water,dict_demand_electricity,dict_demand_heating)
 
-# (dict_demand_charging,dict_demand_hot_water,dict_demand_electricity,dict_demand_heating)=read_demand_data()
-# print('dict_demand_hot_water: ', dict_demand_hot_water)
+!!! new set here and to dict!
+
+
 
 def read_weather_data():
     '''
@@ -100,13 +89,7 @@ def read_weather_data():
     dict_temperature = weather_df['Temperature'].to_dict()
     return(dict_irradiation,dict_temperature)
 
-# (dict_irradiation,dict_temperature)=read_weather_data()
-# print('dict_temperature: ', dict_temperature)
-# (param_annuity,param_area_roof,param_capacity_density_pv,param_specific_DHW_demand,param_reduction_cop,\
-#     param_temp_heating,param_powerflow_max_battery,param_powerflow_max_battery_car,param_capacity_car,param_efficiency_battery,param_efficiency_battery_car,\
-#     param_efficiency_gas,param_number_chargingstations,\
-#     param_number_households,param_simultaneity)=read_gerneral_data()
-# print(param_temp_heating)    
+
 
 def calculate_COP():
     '''
@@ -120,6 +103,7 @@ def calculate_COP():
     dict_COP = weather_df['Temperature'].to_dict()
     for key in dict_COP:
             dict_COP[key] = ((dict_COP[key])/(param_temp_heating-dict_COP[key]))*param_reduction_cop
+
     return(dict_COP) 
 
 # dict_COP=calculate_COP()
@@ -272,3 +256,22 @@ def calculate_COP():
 #     return(dict_price_invest,dict_cost_service,dict_price_connection,dict_price_fuel,dict_price_invest_contractor,dict_cost_service_contractor, \
 #     dict_price_connection_contractor,dict_price_fuel_contractor,dict_price_invest_default,dict_cost_service_default, \
 #     dict_price_connection_default,dict_price_fuel_default,dict_price_feedin_default)
+
+
+# general_df = pd.read_excel(io=input_file_path, sheet_name='General Data').drop('Abbreviation', axis=1).set_index('Parameter')   
+    # param_interest_rate= general_df.at['Interest rate','Value']
+    # param_depreciation= general_df.at['Depreciation time','Value']
+    # param_annuity=(((1+param_interest_rate)**param_depreciation)*param_interest_rate)/(((1+param_interest_rate)**param_depreciation)-1)
+    # param_area_roof=general_df.at['Area Roof','Value']
+    # param_capacity_density_pv=general_df.at['Area PV','Value']
+    # param_specific_DHW_demand=general_df.at['DOW p.P.','Value']
+    # param_powerflow_max_battery=general_df.at['Maximum Powerflow Battery','Value']
+    # param_powerflow_max_battery_car=general_df.at['Maximum Powerflow Battery Car','Value']
+    # param_capacity_car=general_df.at['Capacity Battery Car','Value']
+    # param_efficiency_battery=general_df.at['Efficiency Battery Car','Value']
+    # param_efficiency_battery_car=general_df.at['Efficiency Battery Car','Value']
+    # param_efficiency_gas=general_df.at['Efficiency Gas Boiler','Value']
+    # param_number_chargingstations=general_df.at['Number of charging stations','Value']
+    # param_number_households=general_df.at['Number of household','Value']
+    # param_simultaneity=general_df.at['Simultaneity factor','Value']
+

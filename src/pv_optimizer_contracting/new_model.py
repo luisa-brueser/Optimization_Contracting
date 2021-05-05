@@ -13,11 +13,8 @@ from input_new_model import *
 model = ConcreteModel()
 
 # Loading all variables from input data
-(set_time,set_finance_options,set_technologies,set_default_technologies,set_costs))=read_set_data()
-(param_annuity,param_area_roof,param_capacity_density_pv,param_specific_DHW_demand,\
-    param_powerflow_max_battery,param_powerflow_max_battery_car,param_capacity_car,param_efficiency_battery,param_efficiency_battery_car,\
-    param_efficiency_gas,param_number_cars,\
-    param_number_households,param_simultaneity)=read_gerneral_data()
+(set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default))=read_set_data()
+(dict_general_parameters,annuity_factor)=read_general_data()
 (dict_price_invest,dict_cost_service,dict_price_connection,dict_price_fuel,dict_price_invest_contractor,dict_cost_service_contractor, \
     dict_price_connection_contractor,dict_price_fuel_contractor,dict_price_invest_default,dict_cost_service_default, \
     dict_price_connection_default,dict_price_fuel_default,dict_price_feedin_default)=read_cost_data()
@@ -34,22 +31,20 @@ model.default = Set(initialize = set_default_technologies.keys(),doc='Default el
 
 ## Parameters
 #General Parameters
-model.annuity=Param(initialize = param_annuity,mutable=False,doc='Annuity factor to convert investment costs in annual costs')
-model.area_roof=Param(initialize = param_area_roof,mutable=False,within=Any,doc='Area of the roof [m2], determines limit of PV and ST capacity')
-model.capacity_density_pv=Param(initialize = param_capacity_density_pv,mutable=False,within=Any,doc='Capacity density of PV [kWp/m2]')
-model.specific_DHW_demand = Param(minitialize = param_specific_DHW_demand,,mutable=False,within=Any,doc='Demand of hot water per Person')
+model.annuity=Param(initialize = annuity_factor,mutable=False,doc='Annuity factor to convert investment costs in annual costs')
+model.area_roof=Param(initialize = dict_general_parameters['Area Roof'],mutable=False,within=Any,doc='Area of the roof [m2], determines limit of PV and ST capacity')
+model.capacity_density_pv=Param(initialize = dict_general_parameters['Area PV'],mutable=False,within=Any,doc='Capacity density of PV [kWp/m2]')
+model.specific_DHW_demand = Param(minitialize = dict_general_parameters['DHW p.P.'],mutable=False,within=Any,doc='Demand of hot water per Person')
 model.cop = Param(model.time, initialize = dict_COP,doc='Reduced COP per timestep')
-model.specific_DHW_demand = Param(minitialize = param_specific_DHW_demand,mutable=False,within=Any,doc='Demand of hot water per Person')
-model.powerflow_max_battery= Param(minitialize = param_powerflow_max_battery, mutable=False,within=Any,doc='Maximum powerflow into and out of stationary battery')
-model.powerflow_max_battery_car= Param(minitialize = param_powerflow_max_battery_car, mutable=False,within=Any,doc='Maximum powerflow into and out of car battery')
-model.capacity_car= Param(minitialize = param_capacity_car, mutable=False,within=Any,doc='Capacity battery of chosen car model')
-model.efficiency_battery= Param(minitialize = param_efficiency_battery, mutable=False,within=Any,doc='Efficiency of stationary battery')
-model.efficiency_battery_car= Param(minitialize = param_efficiency_battery_car, mutable=False,within=Any,doc='Efficiency of car battery')
-model.efficiency_gas= Param(minitialize = param_efficiency_gas, mutable=False,within=Any,doc='Efficiency of decentralized gas boilers')
-model.number_cars= Param(minitialize = param_number_cars, mutable=False,within=Any,doc='Number of charging stations (or cars) chosen')
-model.number_households= Param(minitialize = param_number_households, mutable=False,within=Any,doc='Number of households')
-model.number_households= Param(minitialize = param_number_households, mutable=False,within=Any,doc='Number of households')
-model.simultaneity= Param(minitialize = param_simultaneity, mutable=False,within=Any,doc='Simultaneity factor for hot water usage')
+model.powerflow_max_battery= Param(minitialize = dict_general_parameters['Maximum Powerflow Battery'], mutable=False,within=Any,doc='Maximum powerflow into and out of stationary battery')
+model.powerflow_max_battery_car= Param(minitialize = dict_general_parameters['Maximum Powerflow Battery Car'], mutable=False,within=Any,doc='Maximum powerflow into and out of car battery')
+model.capacity_car= Param(minitialize = dict_general_parameters['Capacity Battery Car'], mutable=False,within=Any,doc='Capacity battery of chosen car model')
+model.efficiency_battery= Param(minitialize = dict_general_parameters['Efficiency Battery'], mutable=False,within=Any,doc='Efficiency of stationary battery')
+model.efficiency_battery_car= Param(minitialize = dict_general_parameters['Efficiency Battery Car'], mutable=False,within=Any,doc='Efficiency of car battery')
+model.efficiency_gas= Param(minitialize =dict_general_parameters['Efficiency Gas Boiler'], mutable=False,within=Any,doc='Efficiency of decentralized gas boilers')
+model.number_cars= Param(minitialize = dict_general_parameters['Number of cars'], mutable=False,within=Any,doc='Number of charging stations (or cars) chosen')
+model.number_households= Param(minitialize = dict_general_parameters['Number of charging stations'], mutable=False,within=Any,doc='Number of households')
+model.simultaneity= Param(minitialize = dict_general_parameters['Simultaneity factor'], mutable=False,within=Any,doc='Simultaneity factor for hot water usage')
 
 #Cost Parameters
 model.price_invest = Param(model.technologies, initialize = dict_price_invest,doc='Prices for initial investment')
