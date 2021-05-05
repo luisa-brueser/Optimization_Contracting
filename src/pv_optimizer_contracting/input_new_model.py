@@ -20,7 +20,8 @@ def read_set_data():
     set_default_technologies = dict.fromkeys(set_df['Default Elements'].dropna(),0)
     set_costs = dict.fromkeys(set_df['Cost type'].dropna(),0)
     set_costs_default= dict.fromkeys(set_df['Cost type default'].dropna(),0)
-    return (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default)
+    set_demand= dict.fromkeys(set_df['Demand'].dropna(),0)
+    return (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand)
 
 
 def read_general_data():
@@ -34,18 +35,28 @@ def read_general_data():
     annuity_factor=(((1+dict_general_parameters['Interest rate'])**dict_general_parameters['Depreciation time'])*dict_general_parameters['Interest rate'])/ \
     (((1+dict_general_parameters['Interest rate'])**dict_general_parameters['Depreciation time'])-1)
 
-    return (dict_general_parameters,annuity_factor)
+    return (dict_general_parameters)
+# (dict_general_parameters)=read_general_data()
+# print('dict_general_parameters: ', dict_general_parameters)
+
+def calculate_annuity_factor():
+    '''
+    Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
+    '''
+    (dict_general_parameters)=read_general_data()
+    
+    annuity_factor=(((1+dict_general_parameters['Interest rate'])**dict_general_parameters['Depreciation time'])*dict_general_parameters['Interest rate'])/ \
+    (((1+dict_general_parameters['Interest rate'])**dict_general_parameters['Depreciation time'])-1)
+
+    return(annuity_factor)
+
+
 
 def read_cost_data():
     '''
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
     '''
-    set_df = pd.read_excel(io=input_file_path, sheet_name='Sets')
-    set_finance_options= dict.fromkeys(set_df['Finance Options'].dropna(),0)
-    set_technologies = dict.fromkeys(set_df['Elements'].dropna(),0)
-    set_default_technologies = dict.fromkeys(set_df['Default Elements'].dropna(),0)
-    set_costs = dict.fromkeys(set_df['Cost type'].dropna(),0)
-    set_costs_default= dict.fromkeys(set_df['Cost type default'].dropna(),0)
+    (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand)=read_set_data()
 
     cost_new_df = pd.read_excel(io=input_file_path, sheet_name='Costs new investments').dropna().set_index(['Finance Options','Elements'])._drop_axis('Unit',0,level=1)
 
@@ -64,38 +75,58 @@ def read_cost_data():
 
     return (dict_cost_new,dict_cost_default)
 
+(dict_cost_new,dict_cost_default)=read_cost_data()
+print('dict_cost_new: ', dict_cost_new)
+# print('dict_cost_new: ', dict_cost_new['Investment Price'])
+# dict_you_want = { 'Investment Price': dict_cost_new['Investment Price'] for your_key in your_keys }
+
+# for [a,b,c],d in dict_cost_new.items():
+#     print(c)
+
+# new=dict(([a,b,c],d) for [a,b,c],d  in dict_cost_new.items() if c == 'Investment Price')
+# print('new: ', new)
+
+# new=dict_cost_new['Contractor', Elements, 'Connection Price'] for Elements in dict_cost_new.key()
+# print('new: ', new)
+
+# investment=dict()
+# for key in dict_cost_new.keys():
+#     if key == 'Investment Price'
+
+#     print(key)
+
 
 def read_demand_data():
     '''
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
     '''
+    (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand)=read_set_data()
+
     demand_df = pd.read_excel(io=input_file_path, sheet_name='Demand').reset_index().dropna().set_index('Time')
-    dict_demand_charging = demand_df['Car'].to_dict()
-    dict_demand_hot_water = demand_df['DHW'].to_dict()
-    dict_demand_electricity = demand_df['Electricity household'].to_dict()
-    dict_demand_heating = demand_df['Heating'].to_dict()
-    return(dict_demand_charging,dict_demand_hot_water,dict_demand_electricity,dict_demand_heating)
 
-!!! new set here and to dict!
+    dict_demand = dict()
+    for idx1 in set_time:
+        for idx2 in set_demand:
+            dict_demand[idx1, idx2] = demand_df.loc[idx1][idx2]
 
+    return(dict_demand)
 
 
 def read_weather_data():
     '''
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
     '''
+
     weather_df = pd.read_excel(io=input_file_path, sheet_name='Irradiation and temperatur').reset_index().dropna().set_index('Time')
     dict_irradiation = weather_df['Irradiation'].to_dict()
     dict_temperature = weather_df['Temperature'].to_dict()
     return(dict_irradiation,dict_temperature)
 
 
-
 def calculate_COP():
     '''
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
     '''
-
     general_df = pd.read_excel(io=input_file_path, sheet_name='General Data').drop('Abbreviation', axis=1).set_index('Parameter')   
     weather_df = pd.read_excel(io=input_file_path, sheet_name='Irradiation and temperatur').reset_index().dropna().set_index('Time')
     param_reduction_cop=general_df.at['Reduction COP','Value']
