@@ -24,6 +24,10 @@ def read_set_data():
     return (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand)
 
 
+# (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand)=read_set_data()
+# print('set_default_technologies: ', set_default_technologies)
+# print('set_costs_default: ', set_costs_default.keys())
+
 def read_general_data():
     '''
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
@@ -75,8 +79,10 @@ def read_cost_data():
 
     return (dict_cost_new,dict_cost_default)
 
-(dict_cost_new,dict_cost_default)=read_cost_data()
-print('dict_cost_new: ', dict_cost_new)
+# (dict_cost_new,dict_cost_default)=read_cost_data()
+# print('dict_cost_default: ', dict_cost_default)
+# print('dict_cost_new: ', dict_cost_new)
+
 # print('dict_cost_new: ', dict_cost_new['Investment Price'])
 # dict_you_want = { 'Investment Price': dict_cost_new['Investment Price'] for your_key in your_keys }
 
@@ -112,6 +118,28 @@ def read_demand_data():
     return(dict_demand)
 
 
+
+def read_max_demand():
+    '''
+    Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
+    '''
+    (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand)=read_set_data()
+
+    demand_df = pd.read_excel(io=input_file_path, sheet_name='Demand').reset_index().dropna().set_index('Time')
+    
+    dict_max_demand=dict()
+    for idx1 in set_demand:
+        max_value=demand_df[idx1].max()
+        dict_max_demand[idx1]=max_value
+        
+    return(dict_max_demand)    
+
+
+(dict_max_demand)=read_max_demand()
+print('dict_max_demand: ', dict_max_demand)
+
+
+
 def read_weather_data():
     '''
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
@@ -122,6 +150,8 @@ def read_weather_data():
     dict_temperature = weather_df['Temperature'].to_dict()
     return(dict_irradiation,dict_temperature)
 
+# (dict_irradiation,dict_temperature)=read_weather_data()
+# print('dict_irradiation: ', dict_irradiation)
 
 def calculate_COP():
     '''
