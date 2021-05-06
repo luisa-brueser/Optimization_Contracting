@@ -18,6 +18,7 @@ model = ConcreteModel()
 (annuity_factor)=calculate_annuity_factor()
 (dict_cost_new,dict_cost_default)=read_cost_data()
 (dict_demand)=read_demand_data()
+(dict_max_demand,dict_max_demand_default) =read_max_demand()
 (dict_irradiation,dict_temperature)=read_weather_data()
 (dict_COP)=calculate_COP()
 
@@ -53,7 +54,9 @@ model.cost_new = Param(model.set_finance_options,model.set_new_technologies,mode
 model.cost_default = Param(model.set_default_technologies,model.set_costs_default, initialize = dict_cost_default,doc='Prices for initial investment')
 
 #Demand Parameters
-model.demand = Param(model.set_time,model.set_demand, initialize = dict_demand,doc='Demand per timestep per demand type e.g. charging,electricity, hot water, heating')
+model.demand = Param(model.set_time,model.set_demand, initialize =dict_demand,doc='Demand per timestep per demand type e.g. charging,electricity, hot water, heating')
+model.connection_capacity_default= Param(model.set_default_technologies, initialize =dict_max_demand_default,doc='Max demand = Connection capacity per default technology')
+
 
 #Weather Parameter
 model.irradiation = Param(model.set_time, initialize = dict_irradiation,doc='Irradiation on flat surface per timestep')
@@ -109,13 +112,18 @@ model.binary_ST_DH=Var(within=Binary,doc='Binary Variable becomes TRUE if ST AND
 def cost_rule(model):
     investment_costs_total=sum(model.annuity*model.capacity[finance_options, technologies] * model.cost_new [finance_options, technologies,'Investment Price'] for finance_options in model.set_finance_options for technologies in model.set_new_technologies) +\
         model.binary_ST_DH*model.infrastructure_ST2DH
+
     service_costs_total=sum(model.binary_default_technologies[default_technologies]*model.cost_default[default_technologies,'Service Cost'] \
-    for default_technologies in model.set_default_technologies) + \
-    sum(model.binary_new_technologies[finance_options,new_technologies]*model.cost_new[finance_options,new_technologies,'Service Cost'] \
-    for finance_options in model.set_finance_options for new_technologies in model.set_new_technologies)
-    connection_costs_total=sum(model.binary_default_technologies[default_technologies]*model.cost_default[default_technologies,'Connection Price'] \
-    for default_technologies in model.set_default_technologies) 
-    connection_costs_total=max(model.supply_default[time,default_technologies] for time in model.set_time for default_technologies in model.set_default_technologies)
+        for default_technologies in model.set_default_technologies) + \
+        sum(model.binary_new_technologies[finance_options,new_technologies]*model.cost_new[finance_options,new_technologies,'Service Cost'] \
+        for finance_options in model.set_finance_options for new_technologies in model.set_new_technologies)
+
+    connection_costs_total=sum(model.binary_default_technologies[default_technologies]*model.connection_capacity_default[default_technologies] *\
+        model.cost_default[default_technologies,'Connection Price'] for default_technologies in model.set_default_technologies) +\
+        sum(model.capacity[finance_options, technologies] * model.cost_new [finance_options, technologies,'Connection Price'] \
+        for finance_options in model.set_finance_options for technologies in model.set_new_technologies)
+
+    
     total_costs=investment_costs_total+service_costs_total+connection_costs_total
     return total_costs
 model.obj = Objective(rule = cost_rule, sense=minimize, doc='minimize total costs')

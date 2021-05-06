@@ -131,12 +131,18 @@ def read_max_demand():
     for idx1 in set_demand:
         max_value=demand_df[idx1].max()
         dict_max_demand[idx1]=max_value
-        
-    return(dict_max_demand)    
+
+    max_electric_demand=dict_max_demand['Car']+dict_max_demand['Electricity household']
+    max_thermal_demand=dict_max_demand['DHW']+dict_max_demand['Heating']   
+
+    dict_max_demand_default={'Electricity':max_electric_demand,'DH': max_thermal_demand, 'Gas': max_thermal_demand}
+    
+    return(dict_max_demand,dict_max_demand_default)    
 
 
-(dict_max_demand)=read_max_demand()
-print('dict_max_demand: ', dict_max_demand)
+(dict_max_demand,dict_max_demand_default) =read_max_demand()
+print('dict_max_demand_default: ', dict_max_demand_default)
+
 
 
 
