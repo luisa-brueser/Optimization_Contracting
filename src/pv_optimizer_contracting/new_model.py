@@ -88,7 +88,7 @@ model.temperature = Param(model.set_time, initialize = dict_temperature,doc='Out
 model.capacity=Var(model.set_finance_options,model.set_new_technologies, bounds=(0,2000),within=NonNegativeReals,doc='Newly installed capacity per financing option per technology')
 model.supply_default=Var(model.set_time,model.set_default_technologies, bounds=(0,2000),within=NonNegativeReals,doc='Supply per default technology per timestep')
 # model.connection_capacity_default=Var(model.set_default_technologies, bounds=(0,2000),within=NonNegativeReals,doc='Supply per default technology per timestep')
-model.supply_new=Var(model.set_time,model.set_finance_options,model.set_default_technologies, bounds=(0,2000),within=NonNegativeReals,doc='Supply per new technology per financing option per timestep')
+model.supply_new=Var(model.set_time,model.set_finance_options,model.set_new_technologies, bounds=(0,2000),within=NonNegativeReals,doc='Supply per new technology per financing option per timestep')
 model.binary_default_technologies=Var(model.set_default_technologies, within=Binary,doc='Binary Variable becomes TRUE if technology is installed')
 model.binary_new_technologies=Var(model.set_finance_options,model.set_new_technologies, within=Binary,doc='Binary Variable becomes TRUE if technology is installed')
 model.binary_ST_DH=Var(within=Binary,doc='Binary Variable becomes TRUE if ST AND DH are installed, ST can feed into DH')
@@ -123,9 +123,15 @@ def cost_rule(model):
         sum(model.capacity[finance_options, technologies] * model.cost_new [finance_options, technologies,'Connection Price'] \
         for finance_options in model.set_finance_options for technologies in model.set_new_technologies)
 
-    
-    total_costs=investment_costs_total+service_costs_total+connection_costs_total
+    variable_cost_total= sum(model.supply_default[time,default_technologies]*model.cost_default[default_technologies,'Fuel Price'] \
+        for default_technologies in model.set_default_technologies for time in model.set_time) + \
+        sum(model.supply_new[time,finance_options,new_technologies]*model.cost_new[finance_options,new_technologies,'Fuel Price'] \
+        for time in model.set_time for finance_options in model.set_finance_options for new_technologies in model.set_new_technologies)
+
+
+    total_costs=investment_costs_total+service_costs_total+connection_costs_total+variable_cost_total
     return total_costs
+
 model.obj = Objective(rule = cost_rule, sense=minimize, doc='minimize total costs')
 
 

@@ -140,8 +140,8 @@ def read_max_demand():
     return(dict_max_demand,dict_max_demand_default)    
 
 
-(dict_max_demand,dict_max_demand_default) =read_max_demand()
-print('dict_max_demand_default: ', dict_max_demand_default)
+# (dict_max_demand,dict_max_demand_default) =read_max_demand()
+# print('dict_max_demand_default: ', dict_max_demand_default)
 
 
 
