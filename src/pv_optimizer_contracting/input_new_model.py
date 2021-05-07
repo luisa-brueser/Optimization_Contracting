@@ -21,12 +21,20 @@ def read_set_data():
     set_costs = dict.fromkeys(set_df['Cost type'].dropna(),0)
     set_costs_default= dict.fromkeys(set_df['Cost type default'].dropna(),0)
     set_demand= dict.fromkeys(set_df['Demand'].dropna(),0)
-    return (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand)
+    set_PV2= dict.fromkeys(set_df['PV to'].dropna(),0)
+    set_ST2= dict.fromkeys(set_df['ST to'].dropna(),0)
+    set_elec_grid2= dict.fromkeys(set_df['Electric Grid to'].dropna(),0)
+    set_Car2= dict.fromkeys(set_df['Car to'].dropna(),0)
+    set_Battery2= dict.fromkeys(set_df['Battery to'].dropna(),0)
+    set_HP2= dict.fromkeys(set_df['HP to'].dropna(),0)
+    return (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
+        set_PV2,set_ST2,set_elec_grid2,set_Car2,set_Battery2,set_HP2)
 
 
-# (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand)=read_set_data()
-# print('set_default_technologies: ', set_default_technologies)
-# print('set_costs_default: ', set_costs_default.keys())
+# (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
+#     set_PV2,set_ST2,set_elec_grid2,set_Car2,set_Battery2,set_HP2)=read_set_data()
+# print('set_HP2: ', set_HP2)
+
 
 def read_general_data():
     '''
@@ -55,12 +63,12 @@ def calculate_annuity_factor():
     return(annuity_factor)
 
 
-
 def read_cost_data():
     '''
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
     '''
-    (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand)=read_set_data()
+    (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand,\
+    set_PV2,set_ST2,set_elec_grid2,set_Car2,set_Battery2,set_HP2)=read_set_data()
 
     cost_new_df = pd.read_excel(io=input_file_path, sheet_name='Costs new investments').dropna().set_index(['Finance Options','Elements'])._drop_axis('Unit',0,level=1)
 
@@ -106,7 +114,8 @@ def read_demand_data():
     '''
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
     '''
-    (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand)=read_set_data()
+    (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand,\
+    set_PV2,set_ST2,set_elec_grid2,set_Car2,set_Battery2,set_HP2)=read_set_data()
 
     demand_df = pd.read_excel(io=input_file_path, sheet_name='Demand').reset_index().dropna().set_index('Time')
 
@@ -123,7 +132,8 @@ def read_max_demand():
     '''
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
     '''
-    (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand)=read_set_data()
+    (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand,\
+    set_PV2,set_ST2,set_elec_grid2,set_Car2,set_Battery2,set_HP2)=read_set_data()
 
     demand_df = pd.read_excel(io=input_file_path, sheet_name='Demand').reset_index().dropna().set_index('Time')
     
@@ -172,11 +182,32 @@ def calculate_COP():
             dict_COP[key] = ((dict_COP[key])/(param_temp_heating-dict_COP[key]))*param_reduction_cop
 
     return(dict_COP) 
-
 # dict_COP=calculate_COP()
 # print(dict_COP)
-# (dict_irradiation,dict_temperature)=read_weather_data()
-# print('dict_irradiation: ', dict_irradiation)
+
+def calculate_performance_PV():
+    '''
+    Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
+    '''
+
+    (dict_irradiation,dict_temperature)=read_weather_data()
+    (dict_general_parameters)=read_general_data()
+    dict_capacity_factor_PV= dict_irradiation.copy() 
+    for key in dict_capacity_factor_PV:
+        dict_capacity_factor_PV[key] = ((dict_capacity_factor_PV[key] *dict_general_parameters['Surface Factor PV'])/dict_general_parameters['Irradiation STC']) \
+            *dict_general_parameters['Performance ratio PV']
+
+    dict_temperature_factor_PV= dict_temperature.copy()
+    for key in dict_temperature_factor_PV:
+        dict_temperature_factor_PV[key]=(dict_temperature_factor_PV[key]-dict_general_parameters['Temperature STC'])*(dict_general_parameters['Temperatur factor PV']/100)
+    return(dict_capacity_factor_PV,dict_temperature_factor_PV) 
+
+
+# (dict_capacity_factor_PV,dict_temperature_factor_PV)=calculate_performance_PV()
+# print('dict_temperature_factor_PV: ', dict_temperature_factor_PV)
+# print('dict_capacity_factor: ', dict_capacity_factor_PV)
+
+
 
 # (dict_price_invest,dict_cost_service,dict_price_connection,dict_price_fuel,dict_price_invest_contractor,dict_cost_service_contractor, \
 #     dict_price_connection_contractor,dict_price_fuel_contractor,dict_price_invest_default,dict_cost_service_default, \
@@ -190,9 +221,9 @@ def calculate_COP():
 #     irradiation_df = pd.read_excel(io=input_file_path, sheet_name='irradiation', index_col=0) 
 
 #     #irradtion on the full roof area
-#     dict_irradiation_full_pv_area = dict(irradiation_df['PV'])
-#     for key in dict_irradiation_full_pv_area:
-#         dict_irradiation_full_pv_area[key] = dict_irradiation_full_pv_area[key] *param_area_roof          
+#     dict_irradiation_full_PV_area = dict(irradiation_df['PV'])
+#     for key in dict_irradiation_full_PV_area:
+#         dict_irradiation_full_PV_area[key] = dict_irradiation_full_PV_area[key] *param_area_roof          
 
 #     dict_irradiation = dict()
 #     for idx1 in set_time :
@@ -202,7 +233,7 @@ def calculate_COP():
 #     # capacity factor of PV options is calculated from irradiation [kW/m²] multiplied by specific area of PV [m2/kWp]
 #     dict_capacity_factor_var_supply = dict_irradiation.copy() 
 #     for key in dict_capacity_factor_var_supply:
-#         dict_capacity_factor_var_supply[key] = dict_capacity_factor_var_supply[key] *param_specific_area_pv
+#         dict_capacity_factor_var_supply[key] = dict_capacity_factor_var_supply[key] *param_specific_area_PV
 
 #     # # capacity factor is limited to 1
 #     # for key,value in dict_capacity_factor_var_supply.items():
@@ -219,9 +250,9 @@ def calculate_COP():
 #     dict_capacity_factor = {**dict_capacity_factor_fix_supply, **dict_capacity_factor_var_supply}
 
 #     # maximum capacity of PV option is limited by the area of the roof
-#     dict_max_capacity_pv= dict()
+#     dict_max_capacity_PV= dict()
 #     for idx in set_options_var_supply:
-#         dict_max_capacity_pv[idx]=(param_area_roof/param_specific_area_pv)
+#         dict_max_capacity_PV[idx]=(param_area_roof/param_specific_area_PV)
 
 #     # maximum capacity of grid is given as constant value
 #     dict_max_capacity_grid= dict()
@@ -229,14 +260,14 @@ def calculate_COP():
 #         dict_max_capacity_grid[idx] = param_max_capacity_grid
 
 #     # combine maximum capacity of all options
-#     dict_max_capacity = {**dict_max_capacity_pv, **dict_max_capacity_grid}
+#     dict_max_capacity = {**dict_max_capacity_PV, **dict_max_capacity_grid}
 
 #     cost_df = pd.read_excel(io=input_file_path, sheet_name='Cost').set_index(['Options']).drop(['Unit'])
 #     dict_price_elec = cost_df['Cost of Electricity'].to_dict()
 #     dict_price_invest = cost_df['Investment Cost'].to_dict()
-#     return (set_time,set_options,dict_dem,dict_irradiation_full_pv_area,dict_capacity_factor,dict_max_capacity,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv)
+#     return (set_time,set_options,dict_dem,dict_irradiation_full_PV_area,dict_capacity_factor,dict_max_capacity,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_PV)
 
-# set_time,set_options,dict_dem,dict_irradiation_full_pv_area,dict_capacity_factor,dict_max_capacity,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_pv=read_data()
+# set_time,set_options,dict_dem,dict_irradiation_full_PV_area,dict_capacity_factor,dict_max_capacity,dict_price_elec,dict_price_invest,param_annuity,param_area_roof,param_specific_area_PV=read_data()
 
 # set_time,set_contractor
 
@@ -244,8 +275,8 @@ def calculate_COP():
 #print('dict_price_invest: ', dict_price_invest)
 #print('dict_capacity_factor: ', dict_capacity_factor)
 #print('dict_capacity_factor: ', dict_capacity_factor)
-# print('dict_irradiation_full_pv_area: ', dict_irradiation_full_pv_area)
-#print('dict_irradiation_full_pv_area: ', dict_irradiation_full_pv_area)
+# print('dict_irradiation_full_PV_area: ', dict_irradiation_full_PV_area)
+#print('dict_irradiation_full_PV_area: ', dict_irradiation_full_PV_area)
 #print('set_options: ', set_options)
 # print('dict_dem: ', dict_dem)
 # print('set_time: ', set_time)
@@ -330,7 +361,7 @@ def calculate_COP():
     # param_depreciation= general_df.at['Depreciation time','Value']
     # param_annuity=(((1+param_interest_rate)**param_depreciation)*param_interest_rate)/(((1+param_interest_rate)**param_depreciation)-1)
     # param_area_roof=general_df.at['Area Roof','Value']
-    # param_capacity_density_pv=general_df.at['Area PV','Value']
+    # param_capacity_density_PV=general_df.at['Area PV','Value']
     # param_specific_DHW_demand=general_df.at['DOW p.P.','Value']
     # param_powerflow_max_battery=general_df.at['Maximum Powerflow Battery','Value']
     # param_powerflow_max_battery_car=general_df.at['Maximum Powerflow Battery Car','Value']
