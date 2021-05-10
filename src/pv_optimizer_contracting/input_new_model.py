@@ -26,14 +26,16 @@ def read_set_data():
     set_elec_grid2= dict.fromkeys(set_df['Electric Grid to'].dropna(),0)
     set_Car2= dict.fromkeys(set_df['Car to'].dropna(),0)
     set_Battery2= dict.fromkeys(set_df['Battery to'].dropna(),0)
+    set_2Battery= dict.fromkeys(set_df['to Battery'].dropna(),0)
     set_HP2= dict.fromkeys(set_df['HP to'].dropna(),0)
     return (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
-        set_PV2,set_ST2,set_elec_grid2,set_Car2,set_Battery2,set_HP2)
+        set_PV2,set_ST2,set_elec_grid2,set_Car2,set_Battery2,set_2Battery,set_HP2)
 
 
 # (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
-#     set_PV2,set_ST2,set_elec_grid2,set_Car2,set_Battery2,set_HP2)=read_set_data()
-# print('set_HP2: ', set_HP2)
+#         set_PV2,set_ST2,set_elec_grid2,set_Car2,set_Battery2,set_2Battery,set_HP2)=read_set_data()
+# print('set_2Battery: ', set_2Battery)
+
 
 
 def read_general_data():
@@ -67,8 +69,8 @@ def read_cost_data():
     '''
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
     '''
-    (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand,\
-    set_PV2,set_ST2,set_elec_grid2,set_Car2,set_Battery2,set_HP2)=read_set_data()
+    (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
+        set_PV2,set_ST2,set_elec_grid2,set_Car2,set_Battery2,set_2Battery,set_HP2)=read_set_data()
 
     cost_new_df = pd.read_excel(io=input_file_path, sheet_name='Costs new investments').dropna().set_index(['Finance Options','Elements'])._drop_axis('Unit',0,level=1)
 
@@ -114,8 +116,8 @@ def read_demand_data():
     '''
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
     '''
-    (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand,\
-    set_PV2,set_ST2,set_elec_grid2,set_Car2,set_Battery2,set_HP2)=read_set_data()
+    (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
+        set_PV2,set_ST2,set_elec_grid2,set_Car2,set_Battery2,set_2Battery,set_HP2)=read_set_data()
 
     demand_df = pd.read_excel(io=input_file_path, sheet_name='Demand').reset_index().dropna().set_index('Time')
 
@@ -133,8 +135,8 @@ def read_max_demand():
     '''
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
     '''
-    (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand,\
-    set_PV2,set_ST2,set_elec_grid2,set_Car2,set_Battery2,set_HP2)=read_set_data()
+    (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
+        set_PV2,set_ST2,set_elec_grid2,set_Car2,set_Battery2,set_2Battery,set_HP2)=read_set_data()
 
     demand_df = pd.read_excel(io=input_file_path, sheet_name='Demand').reset_index().dropna().set_index('Time')
     
