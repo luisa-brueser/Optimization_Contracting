@@ -111,12 +111,13 @@ model.supply_from_HP=Var(model.set_time,model.set_finance_options,model.set_HP2,
 model.area_PV=Var(model.set_finance_options, bounds=(0,2000),within=NonNegativeReals,doc='Area of PV built per financing option')    
 model.demand_shift_total=Var(bounds=(0,2000),within=NonNegativeReals,doc='Total shift of demand in 1 year')
 model.max_capacity_ST=Var(model.set_finance_options,bounds=(0,2000),within=NonNegativeReals,doc='Max capacity of ST, differs if St can feed into DH or not')
+model.reduction_heating_demand=Var(model.set_time,within=NonNegativeReals,doc='Reduced heat demand after insulation')
 
 
 #Binary Variables
-model.binary_default_technologies=Var(model.set_default_technologies, within=Binary,doc='Binary Variable becomes TRUE if technology is installed')
-model.binary_new_technologies=Var(model.set_finance_options,model.set_new_technologies, within=Binary,doc='Binary Variable becomes TRUE if technology is installed')
-model.binary_ST_DH=Var(within=Binary,doc='Binary Variable becomes TRUE if ST AND DH are installed, ST can feed into DH')
+model.binary_default_technologies=Var(model.set_default_technologies, initialize = 1, within=Binary,doc='Binary Variable becomes TRUE if technology is installed')
+model.binary_new_technologies=Var(model.set_finance_options,model.set_new_technologies, initialize = 1, within=Binary,doc='Binary Variable becomes TRUE if technology is installed')
+model.binary_ST_DH=Var(initialize = 1, within=Binary,doc='Binary Variable becomes TRUE if ST AND DH are installed, ST can feed into DH')
 
 
 
@@ -169,7 +170,7 @@ def cost_rule(model):
 
 model.obj = Objective(rule = cost_rule, sense=minimize, doc='minimize total costs')
 
-
+#### PV Constraints
 def PV_supply_rule(model,time,finance_options):
     return model.supply_new[time,finance_options,'PV']==(model.capacity[finance_options,'PV']*model.capacity_factor_PV[time]) \
         -(model.capacity[finance_options,'PV']*model.capacity_factor_PV[time])*model.temperature_factor_PV[time]
@@ -218,6 +219,8 @@ model.c7 = Constraint(rule= shared_roof_rule, \
 # model.c8 = Constraint(rule= ST_area_limited_rule, \
 #     doc='Total PV limited by roof area')
 
+
+#### ST Constraints
 def ST_supply_rule(model,time,finance_options):
     return model.supply_new[time,finance_options,'ST']==(model.capacity[finance_options,'ST']*model.irradiation[time]*model.efficiency_ST) 
 model.c9 = Constraint(model.set_time,model.set_finance_options, rule= ST_supply_rule, \
@@ -250,13 +253,35 @@ def ST_supply_if_capacity_rule (model,time,finance_options):
 model.c14 = Constraint(model.set_time,model.set_finance_options,rule= ST_supply_if_capacity_rule, \
     doc='ST can only supply if capacity is installed')
 
+def ST_plus_DH_rule (model,finance_options):
+    return model.binary_ST_DH==model.binary_new_technologies[finance_options,'ST']==model.binary_default_technologies['DH']
+model.c15 = Constraint(model.set_finance_options,rule= ST_plus_DH_rule, \
+    doc='Binary variable turns TRUE is ST AND DH are installed')
+
+#### Insultaion Constraints
+def reduction_heating_demand_rule (model,time,finance_options):
+    return model.reduction_heating_demand[time] == model.demand[time,'Heating']*model.capacity[finance_options,'Insulation']
+model.c16 = Constraint(model.set_time,model.set_finance_options, rule= reduction_heating_demand_rule, \
+    doc='Heat demand is reduced by insulation')
+
+def reduction_heating_demand_if_insulation_rule (model,time,finance_options):
+    return model.reduction_heating_demand[time] <= (model.binary_new_technologies[finance_options,'Insulation']* \
+        model.connection_capacity_default['DH'])
+model.c17 = Constraint(model.set_time,model.set_finance_options,rule= reduction_heating_demand_if_insulation_rule, \
+    doc='Heating demand can only be reduced if insulation is done')
+
+def insulation_no_split_rule (model):
+    return model.binary_new_technologies['Contractor','Insulation']+model.binary_new_technologies['Self financed','Insulation'] <= 1
+model.c18 = Constraint(rule= insulation_no_split_rule, \
+    doc='Insulation is only financed by one party no split possible')
 
 opt = SolverFactory('glpk')
 results=opt.solve(model)
 
 instance = model.create_instance()
-model.pprint()
+#model.pprint()
 
+model.c18.pprint()
 status = results.solver.status
 termination_condition = results.solver.termination_condition
 print('termination_condition: ', termination_condition)

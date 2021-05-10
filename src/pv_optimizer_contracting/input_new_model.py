@@ -126,7 +126,8 @@ def read_demand_data():
 
     return(dict_demand)
 
-
+# dict_demand=read_demand_data()
+# print('dict_demand: ', dict_demand)
 
 def read_max_demand():
     '''
