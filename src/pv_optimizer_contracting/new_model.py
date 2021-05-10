@@ -45,7 +45,7 @@ model.set_HP2 = Set(initialize = set_HP2.keys(),doc='Elements that can be suppli
 model.annuity=Param(initialize = annuity_factor, mutable=False,doc='Annuity factor to convert investment costs in annual costs')
 model.area_roof=Param(initialize = dict_general_parameters['Area Roof'],mutable=False,within=Any,doc='Area of the roof [m2], determines limit of PV and ST capacity')
 model.capacity_density_PV=Param(initialize = dict_general_parameters['Area PV'],mutable=False,within=Any,doc='Capacity density of PV [kWp/m2]')
-model.specific_DHW_demand = Param(initialize = dict_general_parameters['Specific DHW'],mutable=False,within=Any,doc='Demand of hot water per Person')
+model.area_ST_per_person = Param(initialize = dict_general_parameters['Area ST per Person'],mutable=False,within=Any,doc='Demand of hot water per Person')
 model.cop = Param(model.set_time, initialize = dict_COP,doc='Reduced COP per timestep')
 model.powerflow_max_battery= Param(initialize = dict_general_parameters['Maximum Powerflow Battery'], mutable=False,within=Any,doc='Maximum powerflow into and out of stationary battery')
 model.powerflow_max_battery_car= Param(initialize = dict_general_parameters['Maximum Powerflow Battery Car'], mutable=False,within=Any,doc='Maximum powerflow into and out of car battery')
@@ -58,6 +58,7 @@ model.number_households= Param(initialize = dict_general_parameters['Number of c
 model.simultaneity= Param(initialize = dict_general_parameters['Simultaneity factor'], mutable=False,within=Any,doc='Simultaneity factor for hot water usage')
 model.cost_infrastructure_ST2DH= Param(initialize = dict_general_parameters['Investment ST to DH'], mutable=False,within=Any,doc='Additional investment if ST feed into DH')
 model.bonus_shifting= Param(initialize = dict_general_parameters['Bonus shifting'], mutable=False,within=Any,doc='Price paid for shifting by contractor per kW')
+model.efficiency_ST= Param(initialize = dict_general_parameters['Efficiency ST'], mutable=False,within=Any,doc='Efficiency ST module')
 
 
 
@@ -79,6 +80,7 @@ model.capacity_factor_PV = Param(model.set_time, initialize = dict_capacity_fact
 model.temperature_factor_PV = Param(model.set_time, initialize = dict_capacity_factor_PV,doc='kW electricity produced from PV per kWp installes per timestep')
 model.max_capacity_PV= Param(initialize = model.area_roof/model.capacity_density_PV,doc='Maximum PV capacity given by area of the roof')
 model.min_capacity_PV_contractor=Param(initialize = dict_general_parameters['Min Capacity PV Contractor'], mutable=False,within=Any,doc='Minium capacity of PV that contractor wants to finance')
+model.min_capacity_ST_contractor=Param(initialize = dict_general_parameters['Min Capacity ST Contractor'], mutable=False,within=Any,doc='Minium capacity of PV that contractor wants to finance')
 
 # model.capacity_factor = Param(model.time,model.options,initialize =dict_capacity_factor,
 #                         doc='Maximum available electricity supply per unit of installed capacity, per option per timestep [kW/kWp]')
@@ -108,6 +110,7 @@ model.supply_from_battery=Var(model.set_time,model.set_finance_options,model.set
 model.supply_from_HP=Var(model.set_time,model.set_finance_options,model.set_HP2, bounds=(0,2000),within=NonNegativeReals,doc='Supply from HP per timestep per financing option')    
 model.area_PV=Var(model.set_finance_options, bounds=(0,2000),within=NonNegativeReals,doc='Area of PV built per financing option')    
 model.demand_shift_total=Var(bounds=(0,2000),within=NonNegativeReals,doc='Total shift of demand in 1 year')
+model.max_capacity_ST=Var(model.set_finance_options,bounds=(0,2000),within=NonNegativeReals,doc='Max capacity of ST, differs if St can feed into DH or not')
 
 
 #Binary Variables
@@ -170,17 +173,16 @@ model.obj = Objective(rule = cost_rule, sense=minimize, doc='minimize total cost
 def PV_supply_rule(model,time,finance_options):
     return model.supply_new[time,finance_options,'PV']==(model.capacity[finance_options,'PV']*model.capacity_factor_PV[time]) \
         -(model.capacity[finance_options,'PV']*model.capacity_factor_PV[time])*model.temperature_factor_PV[time]
-   
 model.c1 = Constraint(model.set_time,model.set_finance_options, rule= PV_supply_rule, \
-    doc='Produces electricity from PV equals installed capacity lowered by capacity and temperature factors')
+    doc='Produced electricity from PV equals installed capacity lowered by capacity and temperature factors')
 
 def from_PV_supply_rule(model,time,finance_options):
     return model.supply_new[time,finance_options,'PV']==sum(model.supply_from_PV[time,finance_options,PV2technologies] for PV2technologies in model.set_PV2)
 model.c2 = Constraint(model.set_time,model.set_finance_options, rule= from_PV_supply_rule, \
-    doc='Produces electricity from PV equals the electricity from PV to other elements/technologies')
+    doc='Produced electricity from PV equals the electricity from PV to other elements/technologies')
 
 def PV_capacity_rule_contractor (model):
-    return model.min_capacity_PV_contractor <= model.capacity['Self financed', 'PV'] <= model.max_capacity_PV
+    return model.min_capacity_PV_contractor <= model.capacity['Contractor', 'PV'] <= model.max_capacity_PV
 model.c3 = Constraint(rule= PV_capacity_rule_contractor, \
     doc='PV capacity is limited by maximum capacity given by Area of the roof and minimum set by contractor')
 
@@ -195,7 +197,6 @@ def PV_area_required_rule (model):
 model.c5 = Constraint(rule= PV_area_required_rule, \
     doc='PV area needed is set by installed PV by financing option')
 
-
 def PV_supply_if_capacity_rule (model,time,finance_options):
     return model.supply_new[time,finance_options,'PV'] <= model.binary_new_technologies[finance_options,'PV']*model.max_capacity_PV
 model.c6 = Constraint(model.set_time,model.set_finance_options,rule= PV_supply_if_capacity_rule, \
@@ -207,18 +208,48 @@ def shared_roof_rule (model):
 model.c7 = Constraint(rule= shared_roof_rule, \
     doc='Area of roof is shared by total PV and total ST area (equals ST capacity)')
 
-def PV_area_limited_rule (model):
-    return 0 <= sum(model.area_PV[finance_options] for finance_options in model.set_finance_options) <= model.area_roof
-model.c8 = Constraint(rule= PV_area_limited_rule, \
-    doc='Total PV limited by roof area')
+# def PV_area_limited_rule (model):
+#     return 0 <= sum(model.area_PV[finance_options] for finance_options in model.set_finance_options) <= model.area_roof
+# model.c8 = Constraint(rule= PV_area_limited_rule, \
+#     doc='Total PV limited by roof area')
 
-def ST_area_limited_rule (model):
-    return 0 <= sum(model.capacity[finance_options, 'ST'] for finance_options in model.set_finance_options) <= model.area_roof
-model.c8 = Constraint(rule= ST_area_limited_rule, \
-    doc='Total PV limited by roof area')
+# def ST_area_limited_rule (model):
+#     return 0 <= sum(model.capacity[finance_options, 'ST'] for finance_options in model.set_finance_options) <= model.area_roof
+# model.c8 = Constraint(rule= ST_area_limited_rule, \
+#     doc='Total PV limited by roof area')
 
+def ST_supply_rule(model,time,finance_options):
+    return model.supply_new[time,finance_options,'ST']==(model.capacity[finance_options,'ST']*model.irradiation[time]*model.efficiency_ST) 
+model.c9 = Constraint(model.set_time,model.set_finance_options, rule= ST_supply_rule, \
+    doc='Produced energy from ST equals installed area*irradiation times efficiency')
 
-#0 <= model.capacity['Self financed', 'PV'] <= model.max_capacity_PV
+def from_ST_supply_rule(model,time,finance_options):
+    return model.supply_new[time,finance_options,'ST']==sum(model.supply_from_ST[time,finance_options,ST2technologies] for ST2technologies in model.set_ST2)
+model.c10 = Constraint(model.set_time,model.set_finance_options, rule= from_ST_supply_rule, \
+    doc='Produced energy from ST equals energy from ST to other elements/technologies')
+
+def ST_max_capacity_rule(model,finance_options):
+    return model.max_capacity_ST[finance_options] == (1-model.binary_default_technologies['DH'])*model.number_households*\
+        model.area_ST_per_person *model.simultaneity+model.binary_default_technologies['DH']*model.area_roof
+model.c11 = Constraint(model.set_finance_options,rule= ST_max_capacity_rule, \
+    doc='Max capacity ST = max area ST is limited by roof area if DH is installed, if not than limited by DHW demand per person')
+
+def ST_capacity_rule_contractor (model,finance_options):
+    return model.min_capacity_ST_contractor <= model.capacity['Contractor', 'ST'] <= model.max_capacity_ST['Contractor'] 
+model.c12 = Constraint(model.set_finance_options,rule= PV_capacity_rule_contractor, \
+    doc='ST capacity=area is limited by maximum capacity given by Area of the roof or DHW demand and minimum set by contractor')
+
+# def ST_capacity_rule  (model,finance_options):
+#     return 1 <= model.capacity['Self financed', 'ST'] <= model.max_capacity_ST['Self financed'] 
+# model.c13 = Constraint(model.set_finance_options,rule= ST_capacity_rule  , \
+#     doc='ST capacity is limited by maximum capacity given by Area of the roof or DHW demand')
+
+def ST_supply_if_capacity_rule (model,time,finance_options):
+    return model.supply_new[time,finance_options,'ST'] <= (model.binary_new_technologies[finance_options,'ST']* \
+        model.area_roof*model.irradiation[time]*model.efficiency_ST) 
+model.c14 = Constraint(model.set_time,model.set_finance_options,rule= ST_supply_if_capacity_rule, \
+    doc='ST can only supply if capacity is installed')
+
 
 opt = SolverFactory('glpk')
 results=opt.solve(model)
