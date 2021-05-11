@@ -115,9 +115,12 @@ model.supply_from_HP=Var(model.set_time,model.set_finance_options,model.set_HP2,
 model.supply_to_HP=Var(model.set_time,model.set_finance_options,model.set_2HP, bounds=(0,2000),within=NonNegativeReals,doc='Supply to HP per timestep per financing option')       
 model.area_PV=Var(model.set_finance_options, bounds=(0,2000),within=NonNegativeReals,doc='Area of PV built per financing option')    
 model.demand_shift_total=Var(bounds=(0,2000),within=NonNegativeReals,doc='Total shift of demand in 1 year')
+model.demand_shift_up=Var(model.set_time,bounds=(0,2000),within=NonNegativeReals,doc='Shift of charging demand up per timestep [kW]')
+model.demand_shift_down=Var(model.set_time,bounds=(0,2000),within=NonNegativeReals,doc='Shift of charging demand up per timestep [kW]')
 model.max_capacity_ST=Var(model.set_finance_options,bounds=(0,2000),within=NonNegativeReals,doc='Max capacity of ST, differs if St can feed into DH or not')
 model.reduction_heating_demand=Var(model.set_time,within=NonNegativeReals,doc='Reduced heat demand after insulation')
-model.state_of_charge=Var(model.set_time, initialize = 1,bounds=(0,2000),within=NonNegativeReals,doc='State of charge at every timestep')
+model.state_of_charge_battery=Var(model.set_time, initialize = 1,bounds=(0,2000),within=NonNegativeReals,doc='State of charge of stationary battery at every timestep')
+model.state_of_charge_car=Var(model.set_time, initialize = 1,bounds=(0,2000),within=NonNegativeReals,doc='State of charge of car at every timestep')
 model.number_charging_stations=Var(model.set_finance_options,bounds=(0,2000),within=NonNegativeReals,doc='Number of charging stations by financing option')
 
 #Binary Variables
@@ -306,17 +309,17 @@ model.c22 = Constraint(model.set_time,model.set_finance_options, rule= powerflow
     doc='Power into battery cannot extend max powerflow')
 
 def soc_limited_by_capapcity_rule(model,time,finance_options):
-    return model.state_of_charge[time] <= sum (model.capacity[finance_options,'Battery Capacity'] \
+    return model.state_of_charge_battery[time] <= sum (model.capacity[finance_options,'Battery Capacity'] \
         for finance_options in model.set_finance_options)
 model.c23 = Constraint(model.set_time,model.set_finance_options, rule= soc_limited_by_capapcity_rule, \
     doc='SOC at every timestep is limited by capacity of battery')
 
 def soc_rule (model, time,finance_options):
     if time == model.set_time[1]:
-        return model.state_of_charge[time] == 0.
+        return model.state_of_charge_battery[time] == 0.
 
     else:
-        return model.state_of_charge[time] == model.state_of_charge[time-1] \
+        return model.state_of_charge_battery[time] == model.state_of_charge_battery[time-1] \
         + (sum(model.supply_to_battery[time,finance_options,toBatterytechnologies] \
         for toBatterytechnologies in model.set_2Battery)*model.efficiency_battery)- \
             ((sum(model.supply_from_battery[time,finance_options,Battery2technologies] \
@@ -386,7 +389,6 @@ def from_car_supply_rule(model,time,finance_options):
 model.c34 = Constraint(model.set_time,model.set_finance_options, rule= from_car_supply_rule, \
     doc='Total energy from Cars equals energy from Cars to other elements/technologies - here only to Battery')
 
-
 def efficiency_car_rule(model,time,finance_options):
     return sum(model.supply_to_car[time,finance_options,toCartechnologies] \
         for toCartechnologies in model.set_Car) *model.efficiency_battery_car == model.supply_new[time,finance_options,'Charging Station']
@@ -398,6 +400,45 @@ def amount_charging_stations_rule(model):
         model.number_cars
 model.c36 = Constraint(rule= amount_charging_stations_rule, \
     doc='Number of charging stations by financing options need to cover demand for charging station (now equals number of cars)')
+
+#### Battery of Cars Constraints
+
+def car_powerflow_battery_out_limited_rule(model,time,finance_options):
+    return 0 <= model.supply_new[time,finance_options,'Charging Station'] <= model.powerflow_max_battery_car
+model.c37 = Constraint(model.set_time,model.set_finance_options, rule= car_powerflow_battery_out_limited_rule, \
+    doc='Powerflow out of car battery cannot extend max powerflow')
+
+def car_powerflow_battery_in_limited_rule (model,time,finance_options):
+    return 0 <= sum(model.supply_to_Car[time,finance_options,toCartechnologies] \
+        for toCartechnologies in model.set_2Car) <= model.powerflow_max_battery_car
+model.c38 = Constraint(model.set_time,model.set_finance_options, rule= car_powerflow_battery_in_limited_rule, \
+    doc='Powerflow into car battery cannot extend max powerflow')
+
+def car_soc_limited_by_capapcity_rule(model,time):
+    return model.state_of_charge_car[time] <= model.capacity_car
+model.c39 = Constraint(model.set_time, rule= car_soc_limited_by_capapcity_rule, \
+    doc='SOC of car at every timestep is limited by capacity of battery')
+
+def car_soc_rule (model, time,finance_options):
+    if time == model.set_time[1]:
+        return model.state_of_charge_car[time] == 0.
+
+    else:
+        return model.state_of_charge_car[time] == model.state_of_charge_car[time-1] \
+        + (sum(model.supply_to_Car[time,finance_options,toCartechnologies] \
+        for toCartechnologies in model.set_2Car)*model.efficiency_battery_car)- \
+            ((sum(model.supply_from_Car[time,finance_options,Car2technologies] \
+            for Car2technologies in model.set_Car2)/model.efficiency_battery_car)) \
+                + model.demand_shift_up[time] -model.demand_shift_down[time]
+model.c40 = Constraint(model.set_time,model.set_finance_options, rule= car_soc_rule, \
+      doc='SOC car defined by in- and output puls minus demand shift')
+
+def demand_charging_rule(model,time):
+    return  model.state_of_charge_car[time] == model.demand[time,'Car']
+model.c41 = Constraint(model.set_time,rule= demand_charging_rule, \
+    doc='Demand curve of charging needs to be met')
+
+#### Multi Party House Constraints
 
 # + sum(model.supply_to_battery[time,finance_options,toBatterytechnologies] \
 #         for toBatterytechnologies in model.set_2Battery)*model.efficiency_battery- \
@@ -420,7 +461,7 @@ results=opt.solve(model)
 instance = model.create_instance()
 # model.pprint()
 
-model.c36.pprint()
+model.c41.pprint()
 status = results.solver.status
 termination_condition = results.solver.termination_condition
 print('termination_condition: ', termination_condition)
