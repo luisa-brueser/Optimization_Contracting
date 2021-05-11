@@ -320,6 +320,35 @@ def soc_rule (model, time,finance_options):
 model.c24 = Constraint(model.set_time,model.set_finance_options, rule= soc_rule, \
       doc='SOC defined by in- and output')
 
+def battery_output_if_invested_rule (model,time,finance_options):
+    return model.supply_new[time,finance_options,'Battery Powerflow'] <= (model.binary_new_technologies[finance_options,'Battery Capacity']* \
+        model.powerflow_max_battery)
+model.c25 = Constraint(model.set_time,model.set_finance_options,rule= battery_output_if_invested_rule  , \
+    doc='Battery can only supply if capacity is installed')
+
+def battery_no_split_rule (model):
+    return model.binary_new_technologies['Contractor','Battery Capacity']+model.binary_new_technologies['Self financed','Battery Capacity'] <= 1
+model.c26 = Constraint(rule= insulation_no_split_rule, \
+    doc='Battery is only financed by one party no split possible')
+
+#### Heating System Constraints
+def only_one_heating_system_rule (model):
+    return sum(model.binary_new_technologies[finance_options,'HP'] for finance_options in model.set_finance_options) \
+        +model.binary_default_technologies['DH']+model.binary_default_technologies['Gas'] <= 1
+model.c27 = Constraint(rule= only_one_heating_system_rule, \
+    doc='Only one heating system can be installed - HP, DH or Gas')
+
+def gas_output_if_installed_rule (model,time):
+    return model.supply_default[time,'Gas'] <= (model.binary_default_technologies['Gas']* \
+        model.connection_capacity_default['Gas'])
+model.c28 = Constraint(model.set_time,rule= gas_output_if_installed_rule, \
+    doc='Gas can only supply if installed')
+
+def DH_output_if_installed_rule (model,time):
+    return model.supply_default[time,'DH'] <= (model.binary_default_technologies['DH']* \
+        model.connection_capacity_default['DH'])
+model.c29 = Constraint(model.set_time,rule= DH_output_if_installed_rule, \
+    doc='DH can only supply if installed')
 
 
 # + sum(model.supply_to_battery[time,finance_options,toBatterytechnologies] \
@@ -343,7 +372,7 @@ results=opt.solve(model)
 instance = model.create_instance()
 # model.pprint()
 
-model.c24.pprint()
+model.c29.pprint()
 status = results.solver.status
 termination_condition = results.solver.termination_condition
 print('termination_condition: ', termination_condition)
