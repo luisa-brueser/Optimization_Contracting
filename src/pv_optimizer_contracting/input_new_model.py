@@ -34,10 +34,10 @@ def read_set_data():
         set_PV2,set_ST2,set_elec_grid2,set_Car2,set_2Car,set_Battery2,set_2Battery,set_HP2,set_2HP)
 
 
-# (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
-#         set_PV2,set_ST2,set_elec_grid2,set_Car2,set_Battery2,set_2Battery,set_HP2)=read_set_data()
+(set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
+        set_PV2,set_ST2,set_elec_grid2,set_Car2,set_2Car,set_Battery2,set_2Battery,set_HP2,set_2HP)=read_set_data()
 # print('set_2Battery: ', set_2Battery)
-
+# print('set_time: ', set_time)
 
 
 def read_general_data():
@@ -53,7 +53,8 @@ def read_general_data():
 
     return (dict_general_parameters)
 # (dict_general_parameters)=read_general_data()
-# print('dict_general_parameters: ', dict_general_parameters)
+
+# print('dict_general_parameters: ', dict_general_parameters['Number of cars'])
 
 def calculate_annuity_factor():
     '''
@@ -120,14 +121,15 @@ def read_demand_data():
     '''
     (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
         set_PV2,set_ST2,set_elec_grid2,set_Car2,set_2Car,set_Battery2,set_2Battery,set_HP2,set_2HP)=read_set_data()
-
+    (dict_general_parameters)=read_general_data()
     demand_df = pd.read_excel(io=input_file_path, sheet_name='Demand').reset_index().dropna().set_index('Time')
 
     dict_demand = dict()
     for idx1 in set_time:
         for idx2 in set_demand:
             dict_demand[idx1, idx2] = demand_df.loc[idx1][idx2]
-
+    # for idx1 in set_time:
+    #     dict_demand[idx1, 'Car'] = dict_demand[idx1, 'Car']*dict_general_parameters['Number of cars']
     return(dict_demand)
 
 # dict_demand=read_demand_data()
@@ -377,4 +379,71 @@ def calculate_performance_PV():
     # param_number_chargingstations=general_df.at['Number of charging stations','Value']
     # param_number_households=general_df.at['Number of household','Value']
     # param_simultaneity=general_df.at['Simultaneity factor','Value']
+
+
+# start=1
+# end=24
+
+# num_list=range(start,end+1)
+# final_sum=sum(num_list)
+
+dict_demand=read_demand_data()
+# print('dict_demand: ', dict_demand)
+# print('dict_demand: ', dict_demand)
+
+(set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
+    set_PV2,set_ST2,set_elec_grid2,set_Car2,set_2Car,set_Battery2,set_2Battery,set_HP2,set_2HP)=read_set_data()
+
+
+# values=range(0,25)
+# print('values: ', values)
+
+# final_start=1
+# final_end=24
+# start=1
+# end=2
+# x=0
+# all_sums=[]
+
+# # while x in range(final_start,final_end):
+# for time in range(final_start,final_end):
+#     x=0
+#     for time in range(start,end):
+#         if time < 24:
+#             x=x+(dict_demand[time,'Car'])
+#             all_sums.append(x)
+#             start=start+2
+#             end=end+2
+#         else:
+#             break
+# x=0
+# start=1
+# end=24
+# final_start=1
+# final_end=int(72/24)
+# all_sums=[]
+# # for time in range(final_start,(len(final_end)/2)+1):
+# for time in range(final_start,final_end+1):
+#     for time in range (start,end+1):
+#         if time <= 72:
+#             x=x+(dict_demand[time,'Car'])
+#         else:
+#             break
+#     all_sums.append(x)
+#     start=start+24
+#     end=end+24
+#     x=0
+# print(all_sums)
+
+
+# print(all_sums)
+# x=0
+# for time in range(1,3):
+#     x=x+(dict_demand[time,'Car'])    
+#     print(x)
+
+
+# print('dict_demand: ', dict_demand[time,'Car'])
+
+
 
