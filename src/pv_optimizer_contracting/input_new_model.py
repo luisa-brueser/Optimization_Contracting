@@ -128,8 +128,8 @@ def read_demand_data():
     for idx1 in set_time:
         for idx2 in set_demand:
             dict_demand[idx1, idx2] = demand_df.loc[idx1][idx2]
-    # for idx1 in set_time:
-    #     dict_demand[idx1, 'Car'] = dict_demand[idx1, 'Car']*dict_general_parameters['Number of cars']
+    for idx1 in set_time:
+        dict_demand[idx1, 'Car'] = dict_demand[idx1, 'Car']*dict_general_parameters['Number of cars']
     return(dict_demand)
 
 # dict_demand=read_demand_data()

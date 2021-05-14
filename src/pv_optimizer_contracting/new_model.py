@@ -102,19 +102,19 @@ model.min_capacity_ST_contractor=Param(initialize = dict_general_parameters['Min
 # model.capacity_battery=Var(set_finance_options, bounds=(0,2000),within=NonNegativeReals,doc='Capacity of stationary battery per financing option')
 # model.powerflow_battery=Var(set_finance_options, bounds=(0,2000),within=NonNegativeReals,doc='Powerflow of stationary battery per financing option')
 # model.charging_stations=Var(set_finance_options, bounds=(0,2000),within=NonNegativeReals,doc='Number of charging stations per financing option')
-model.capacity=Var(model.set_finance_options,model.set_new_technologies, bounds=(0,2000),within=NonNegativeReals,doc='Newly installed capacity per financing option per technology')
+model.capacity=Var(model.set_finance_options,model.set_new_technologies, initialize = 0,bounds=(0,2000),within=NonNegativeReals,doc='Newly installed capacity per financing option per technology')
 model.supply_default=Var(model.set_time,model.set_default_technologies, bounds=(0,2000),within=NonNegativeReals,doc='Supply per timestep per default technology')
-model.supply_new=Var(model.set_time,model.set_finance_options,model.set_new_technologies, bounds=(0,2000),within=NonNegativeReals,doc='Supply per timestepnew per financing option per technology')
-model.supply_from_PV=Var(model.set_time,model.set_finance_options,model.set_PV2, bounds=(0,2000),within=NonNegativeReals,doc='Supply from PV per timestep per financing option')    
-model.supply_from_ST=Var(model.set_time,model.set_finance_options,model.set_ST2, bounds=(0,2000),within=NonNegativeReals,doc='Supply from ST per timestep per financing option')    
-model.supply_from_elec_grid=Var(model.set_time,model.set_elec_grid2 , bounds=(0,2000),within=NonNegativeReals,doc='Supply from electric grid per timestep per financing option')    
-model.supply_from_car=Var(model.set_time,model.set_finance_options,model.set_car2, bounds=(0,2000),within=NonNegativeReals,doc='Supply from Car Battery per timestep per financing option')    
-model.supply_to_car=Var(model.set_time,model.set_finance_options,model.set_2car, bounds=(0,2000),within=NonNegativeReals,doc='Supply from Car Battery per timestep per financing option')    
-model.supply_from_battery=Var(model.set_time,model.set_finance_options,model.set_Battery2, bounds=(0,2000),within=NonNegativeReals,doc='Supply from stationary Battery per timestep per financing option') 
-model.supply_to_battery=Var(model.set_time,model.set_finance_options,model.set_2Battery, bounds=(0,2000),within=NonNegativeReals,doc='Supply to stationary Battery per timestep per financing option')       
-model.supply_from_HP=Var(model.set_time,model.set_finance_options,model.set_HP2, bounds=(0,2000),within=NonNegativeReals,doc='Supply from HP per timestep per financing option')    
-model.supply_to_HP=Var(model.set_time,model.set_finance_options,model.set_2HP, bounds=(0,2000),within=NonNegativeReals,doc='Supply to HP per timestep per financing option')       
-model.area_PV=Var(model.set_finance_options, bounds=(0,2000),within=NonNegativeReals,doc='Area of PV built per financing option')    
+model.supply_new=Var(model.set_time,model.set_finance_options,model.set_new_technologies, initialize = 0,bounds=(0,2000),within=NonNegativeReals,doc='Supply per timestepnew per financing option per technology')
+model.supply_from_PV=Var(model.set_time,model.set_finance_options,model.set_PV2,initialize = 0, bounds=(0,2000),within=NonNegativeReals,doc='Supply from PV per timestep per financing option')    
+model.supply_from_ST=Var(model.set_time,model.set_finance_options,model.set_ST2,initialize = 0, bounds=(0,2000),within=NonNegativeReals,doc='Supply from ST per timestep per financing option')    
+model.supply_from_elec_grid=Var(model.set_time,model.set_elec_grid2 ,initialize = 0, bounds=(0,2000),within=NonNegativeReals,doc='Supply from electric grid per timestep per financing option')    
+model.supply_from_car=Var(model.set_time,model.set_finance_options,model.set_car2, initialize = 0,bounds=(0,2000),within=NonNegativeReals,doc='Supply from Car Battery per timestep per financing option')    
+model.supply_to_car=Var(model.set_time,model.set_finance_options,model.set_2car, initialize = 0,bounds=(0,2000),within=NonNegativeReals,doc='Supply from Car Battery per timestep per financing option')    
+model.supply_from_battery=Var(model.set_time,model.set_finance_options,model.set_Battery2,initialize = 0, bounds=(0,2000),within=NonNegativeReals,doc='Supply from stationary Battery per timestep per financing option') 
+model.supply_to_battery=Var(model.set_time,model.set_finance_options,model.set_2Battery,initialize = 0, bounds=(0,2000),within=NonNegativeReals,doc='Supply to stationary Battery per timestep per financing option')       
+model.supply_from_HP=Var(model.set_time,model.set_finance_options,model.set_HP2,initialize = 0, bounds=(0,2000),within=NonNegativeReals,doc='Supply from HP per timestep per financing option')    
+model.supply_to_HP=Var(model.set_time,model.set_finance_options,model.set_2HP, initialize = 0,bounds=(0,2000),within=NonNegativeReals,doc='Supply to HP per timestep per financing option')       
+model.area_PV=Var(model.set_finance_options, initialize = 0,bounds=(0,2000),within=NonNegativeReals,doc='Area of PV built per financing option')    
 model.demand_shift_total=Var(initialize = 1,bounds=(0,2000),within=NonNegativeReals,doc='Total shift of demand in 1 year')
 model.demand_shift_up=Var(model.set_time,bounds=(0,2000),within=NonNegativeReals,doc='Shift of charging demand up per timestep [kW]')
 model.demand_shift_down=Var(model.set_time,bounds=(0,2000),within=NonNegativeReals,doc='Shift of charging demand up per timestep [kW]')
@@ -127,9 +127,10 @@ model.state_of_charge_car=Var(model.set_time, initialize = 1,bounds=(0,2000),wit
 model.number_charging_stations=Var(model.set_finance_options,bounds=(0,2000),within=NonNegativeReals,doc='Number of charging stations by financing option')
 model.up_shifts_in_one_day=Var(initialize = 1,bounds=(0,2000),within=NonNegativeReals,doc='Total shift of demand in 1 year')
 model.down_shifts_in_one_day=Var(initialize = 1,bounds=(0,2000),within=NonNegativeReals,doc='Total shift of demand in 1 year')
+
 #Binary Variables
 model.binary_default_technologies=Var(model.set_default_technologies, initialize = 1, within=Binary,doc='Binary Variable becomes TRUE if technology is installed')
-model.binary_new_technologies=Var(model.set_finance_options,model.set_new_technologies, initialize = 1, within=Binary,doc='Binary Variable becomes TRUE if technology is installed')
+model.binary_new_technologies=Var(model.set_finance_options,model.set_new_technologies, initialize = 0, within=Binary,doc='Binary Variable becomes TRUE if technology is installed')
 model.binary_ST_DH=Var(initialize = 1, within=Binary,doc='Binary Variable becomes TRUE if ST AND DH are installed, ST can feed into DH')
 
 
@@ -213,9 +214,9 @@ def PV_area_required_rule (model):
 model.c5 = Constraint(rule= PV_area_required_rule, \
     doc='PV area needed is set by installed PV by financing option')
 
-def PV_supply_if_capacity_rule (model,time,finance_options):
-    return model.supply_new[time,finance_options,'PV'] <= model.binary_new_technologies[finance_options,'PV']*model.max_capacity_PV
-model.c6 = Constraint(model.set_time,model.set_finance_options,rule= PV_supply_if_capacity_rule, \
+def PV_binary_if_capacity_rule (model,time,finance_options):
+    return model.binary_new_technologies[finance_options,'PV']*model.max_capacity_PV >= model.capacity[finance_options,'PV']
+model.c6 = Constraint(model.set_time,model.set_finance_options,rule= PV_binary_if_capacity_rule, \
     doc='PV can only supply if capacity is installed')
 
 def shared_roof_rule (model):
@@ -262,10 +263,10 @@ model.c12 = Constraint(model.set_finance_options,rule= PV_capacity_rule_contract
 # model.c13 = Constraint(model.set_finance_options,rule= ST_capacity_rule  , \
 #     doc='ST capacity is limited by maximum capacity given by Area of the roof or DHW demand')
 
-def ST_supply_if_capacity_rule (model,time,finance_options):
-    return model.supply_new[time,finance_options,'ST'] <= (model.binary_new_technologies[finance_options,'ST']* \
-        model.area_roof*model.irradiation[time]*model.efficiency_ST) 
-model.c14 = Constraint(model.set_time,model.set_finance_options,rule= ST_supply_if_capacity_rule, \
+def ST_binary_if_capacity_rule (model,time,finance_options):
+    return (model.binary_new_technologies[finance_options,'ST']* \
+        model.area_roof*model.irradiation[time]*model.efficiency_ST) >= model.capacity[finance_options,'ST']
+model.c14 = Constraint(model.set_time,model.set_finance_options,rule= ST_binary_if_capacity_rule, \
     doc='ST can only supply if capacity is installed')
 
 def ST_plus_DH_rule (model,finance_options):
@@ -341,10 +342,10 @@ def soc_rule (model, time,finance_options):
 model.c24 = Constraint(model.set_time,model.set_finance_options, rule= soc_rule, \
       doc='SOC defined by in- and output')
 
-def battery_output_if_invested_rule (model,time,finance_options):
-    return model.supply_new[time,finance_options,'Battery Powerflow'] <= (model.binary_new_technologies[finance_options,'Battery Capacity']* \
-        model.powerflow_max_battery)
-model.c25 = Constraint(model.set_time,model.set_finance_options,rule= battery_output_if_invested_rule  , \
+def battery_binary_if_capacity_rule (model,time,finance_options):
+    return (model.binary_new_technologies[finance_options,'Battery Capacity']* \
+        model.powerflow_max_battery) >= model.capacity[finance_options,'Battery Capacity']
+model.c25 = Constraint(model.set_time,model.set_finance_options,rule= battery_binary_if_capacity_rule, \
     doc='Battery can only supply if capacity is installed')
 
 def battery_no_split_rule (model):
@@ -391,10 +392,10 @@ def efficiency_HP_rule(model,time,finance_options):
 model.c31 = Constraint(model.set_time,model.set_finance_options, rule= efficiency_HP_rule, \
     doc='Input times COP at every timestep equals HP output')
 
-def HP_output_if_installed_rule (model,time,finance_options):
-    return model.supply_new[time,finance_options,'HP'] <= (model.binary_new_technologies[finance_options,'HP']* \
-        model.connection_capacity_default['Gas'])
-model.c32 = Constraint(model.set_time,model.set_finance_options,rule= HP_output_if_installed_rule, \
+def HP_binary_if_capacity_rule (model,time,finance_options):
+    return (model.binary_new_technologies[finance_options,'HP']* \
+        model.connection_capacity_default['Gas']) >= model.capacity[finance_options,'HP']
+model.c32 = Constraint(model.set_time,model.set_finance_options,rule= HP_binary_if_capacity_rule, \
     doc='HP can only supply if installed. Connection capacity gas equals max thermal demand')
 
 def HP_no_split_rule (model):
@@ -470,9 +471,9 @@ model.c41 = Constraint(model.set_time,rule= demand_charging_rule, \
 def household_electricity_demand_rule(model,time):
     return model.supply_from_elec_grid[time,'Household']+ \
     sum(model.supply_from_PV[time,finance_options,'Household'] for finance_options in model.set_finance_options) \
-    == model.demand[time,'Electricity household'] 
+    == model.demand[time,'Electricity household']
 model.c42 = Constraint(model.set_time,rule= household_electricity_demand_rule, \
-    doc='Electricity demand curve of households need to be met')
+    doc='Electricity demand curve of households plus charging need to be met')
 
 def household_thermal_demand_rule(model,time):
     return  model.total_thermal_demand[time]==model.supply_default[time,'Gas']*model.efficiency_gas+ \
@@ -488,7 +489,7 @@ model.c44 = Constraint(model.set_time,rule= household_total_thermal_demand_rule,
     doc='Thermal demand consists of DHw and heatig demand')
 
 def reduced_heating_demand_rule(model,time):
-    return model.reduced_heating_demand[time] == model.demand[time,'DHW'] - model.reduction_heating_demand[time]
+    return model.reduced_heating_demand[time] == model.demand[time,'Heating'] - model.reduction_heating_demand[time]
 model.c45 = Constraint(model.set_time,rule= reduced_heating_demand_rule, \
     doc='Reduced heating demand after insulation')
 
@@ -562,23 +563,45 @@ results=opt.solve(model)
 
 # instance = model.create_instance()
 # model.pprint()
-# model.c1.pprint()
-#model.c4.pprint()
+# model.c6.pprint()
+#model.c42.pprint()
 status = results.solver.status
 termination_condition = results.solver.termination_condition
 print('termination_condition: ', termination_condition)
 print('status: ', status)
 
 print('Total Cost:',round(model.obj()), 'Total annual costs')
-print(model.capacity['Self financed','PV'].value)
-print(model.capacity['Contractor','PV'].value)
-print(model.capacity['Self financed','ST'].value)
-print(model.capacity['Contractor','ST'].value)
-print(model.capacity['Self financed','HP'].value)
-print(model.capacity['Contractor','HP'].value)
-print('Sum supply electric:', round(sum(model.supply_default[time,'Electricity'].value for time in model.set_time)),'kWh')
+
+print('Capacity Insulation Self financed',model.capacity['Self financed','Insulation'].value)
+print('Capacity Insulation Contractor',model.capacity['Contractor','Insulation'].value)
+
+print('Capacity PV Self financed',model.capacity['Self financed','PV'].value)
+print('Capacity PV Contractor',model.capacity['Contractor','PV'].value)
+print('Sum supply PV Self financed:', round(sum(model.supply_new[time,'Self financed','PV'].value for time in model.set_time)),'kWh')
+print('Sum supply PV Contractor:', round(sum(model.supply_new[time,'Contractor','PV'].value for time in model.set_time)),'kWh')
+print('Sum supply PV to Grid:', round(sum(model.supply_from_PV[time,finance_options,'Grid'].value for time in model.set_time \
+    for finance_options in model.set_finance_options)),'kWh')
+
+print('Capacity ST Self financed',model.capacity['Self financed','ST'].value)
+print('Capacity ST Contractor',model.capacity['Contractor','ST'].value)
+print('Sum supply ST Self financed:', round(sum(model.supply_new[time,'Self financed','ST'].value for time in model.set_time)),'kWh')
+print('Sum supply ST Contractor:', round(sum(model.supply_new[time,'Contractor','ST'].value for time in model.set_time)),'kWh')
+print('Sum supply ST to DH:', round(sum(model.supply_from_ST[time,finance_options,'DH'].value for time in model.set_time \
+    for finance_options in model.set_finance_options)),'kWh')
+
+print('Capacity HP Self financed',model.capacity['Self financed','HP'].value)
+print('Capacity HP Contractor',model.capacity['Contractor','HP'].value)
+print('Sum supply HP Self financed:', round(sum(model.supply_new[time,'Self financed','HP'].value for time in model.set_time)),'kWh')
+print('Sum supply HP Contractor:', round(sum(model.supply_new[time,'Contractor','HP'].value for time in model.set_time)),'kWh')
+
+print('Sum supply electric Grid:', round(sum(model.supply_from_elec_grid[time,'Household'].value for time in model.set_time)),'kWh')
 print('Sum supply DH:', round(sum(model.supply_default[time,'DH'].value for time in model.set_time)),'kWh')
 print('Sum supply Gas:', round(sum(model.supply_default[time,'Gas'].value for time in model.set_time)),'kWh')
+
+print('PV Self financed installed?',model.binary_new_technologies['Self financed','PV'].value)
+print('PV Contractor installed?',model.binary_new_technologies['Contractor','PV'].value)
+print('ST Self financed installed?',model.binary_new_technologies['Self financed','ST'].value)
+print('ST Contractor installed?',model.binary_new_technologies['Contractor','ST'].value)
 
 # model.cost_service = Param(model.technologies, initialize = dict_cost_service,doc='Annual service and maintenance Costs (lump-sum costs)')
 # model.price_connection = Param(model.technologies, initialize = dict_price_connection,doc='Annual connection price per kW')
