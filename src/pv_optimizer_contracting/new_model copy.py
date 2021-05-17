@@ -14,7 +14,7 @@ model = ConcreteModel()
 
 # Loading all variables from input data
 (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
-    set_PV2,set_ST2,set_elec_grid2,set_Car2,set_2Car,set_Battery2,set_2Battery,set_HP2,set_2HP)=read_set_data()
+    set_PV2,set_ST2,set_elec_grid2,set_car2,set_2Car,set_Battery2,set_2Battery,set_HP2,set_2HP)=read_set_data()
 (dict_general_parameters)=read_general_data()
 (annuity_factor)=calculate_annuity_factor()
 (dict_cost_new,dict_cost_default)=read_cost_data()
@@ -35,8 +35,8 @@ model.set_demand = Set(initialize = set_demand.keys(),doc='Demands that need to 
 model.set_PV2 = Set(initialize = set_PV2.keys(),doc='Elements that can be supplied by PV')
 model.set_ST2 = Set(initialize = set_ST2.keys(),doc='Elements that can be supplied by ST')
 model.set_elec_grid2 = Set(initialize = set_elec_grid2.keys(),doc='Elements that can be supplied by the electric grid')
-model.set_Car2 = Set(initialize = set_Car2.keys(),doc='Elements that can be supplied by the battery of electric vehicles')
-model.set_2Car = Set(initialize = set_2Car.keys(),doc='Elements that supply to the battery of electric vehicles')
+model.set_car2 = Set(initialize = set_car2.keys(),doc='Elements that can be supplied by the battery of electric vehicles')
+model.set_2car = Set(initialize = set_2Car.keys(),doc='Elements that supply to the battery of electric vehicles')
 model.set_Battery2 = Set(initialize = set_Battery2.keys(),doc='Elements that can be supplied by the stationary battery')
 model.set_2Battery = Set(initialize = set_2Battery.keys(),doc='Elements that supply the stationary battery')
 model.set_HP2 = Set(initialize = set_HP2.keys(),doc='Elements that can be supplied by HP')
@@ -50,13 +50,13 @@ model.capacity_density_PV=Param(initialize = dict_general_parameters['Area PV'],
 model.area_ST_per_person = Param(initialize = dict_general_parameters['Area ST per Person'],mutable=False,within=Any,doc='Demand of hot water per Person')
 model.cop = Param(model.set_time, initialize = dict_COP,doc='Reduced COP per timestep')
 model.powerflow_max_battery= Param(initialize = dict_general_parameters['Maximum Powerflow Battery'], mutable=False,within=Any,doc='Maximum powerflow into and out of stationary battery')
-model.powerflow_max_battery_Car= Param(initialize = dict_general_parameters['Maximum Powerflow Battery Car'], mutable=False,within=Any,doc='Maximum powerflow into and out of Car battery')
-model.capacity_Car= Param(initialize = dict_general_parameters['Capacity Battery Car'], mutable=False,within=Any,doc='Capacity battery of chosen Car model')
+model.powerflow_max_battery_car= Param(initialize = dict_general_parameters['Maximum Powerflow Battery Car'], mutable=False,within=Any,doc='Maximum powerflow into and out of car battery')
+model.capacity_car= Param(initialize = dict_general_parameters['Capacity Battery Car'], mutable=False,within=Any,doc='Capacity battery of chosen car model')
 model.efficiency_battery= Param(initialize = dict_general_parameters['Efficiency Battery'], mutable=False,within=Any,doc='Efficiency of stationary battery')
-model.efficiency_battery_Car= Param(initialize = dict_general_parameters['Efficiency Battery Car'], mutable=False,within=Any,doc='Efficiency of Car battery')
+model.efficiency_battery_car= Param(initialize = dict_general_parameters['Efficiency Battery Car'], mutable=False,within=Any,doc='Efficiency of car battery')
 model.efficiency_gas= Param(initialize =dict_general_parameters['Efficiency Gas Boiler'], mutable=False,within=Any,doc='Efficiency of decentralized gas boilers')
-model.number_Cars= Param(initialize = dict_general_parameters['Number of Cars'], mutable=False,within=Any,doc='Number of charging stations (or Cars) chosen')
-model.number_households= Param(initialize = dict_general_parameters['Number of households'], mutable=False,within=Any,doc='Number of households')
+model.number_cars= Param(initialize = dict_general_parameters['Number of Cars'], mutable=False,within=Any,doc='Number of charging stations (or cars) chosen')
+model.number_households= Param(initialize = dict_general_parameters['Number of Cars'], mutable=False,within=Any,doc='Number of households')
 model.simultaneity= Param(initialize = dict_general_parameters['Simultaneity factor'], mutable=False,within=Any,doc='Simultaneity factor for hot water usage')
 model.cost_infrastructure_ST2DH= Param(initialize = dict_general_parameters['Investment ST to DH'], mutable=False,within=Any,doc='Additional investment if ST feed into DH')
 model.bonus_shifting= Param(initialize = dict_general_parameters['Bonus shifting'], mutable=False,within=Any,doc='Price paid for shifting by contractor per kW')
@@ -95,36 +95,41 @@ model.min_capacity_ST_contractor=Param(initialize = dict_general_parameters['Min
 
 
 #Vaiables
-model.capacity=Var(model.set_finance_options,model.set_new_technologies,initialize =0 , bounds=(0,2000),within=NonNegativeReals,doc='Newly installed capacity per financing option per technology')
-model.supply_default=Var(model.set_time,model.set_default_technologies,initialize =0 ,within=NonNegativeReals,doc='Supply per timestep per default technology')
-model.supply_new=Var(model.set_time,model.set_finance_options,model.set_new_technologies,initialize =0 ,within=NonNegativeReals,doc='Supply per timestepnew per financing option per technology')
-model.supply_from_PV=Var(model.set_time,model.set_finance_options,model.set_PV2,initialize =0 ,bounds=(0,2000),within=NonNegativeReals,doc='Supply from PV per timestep per financing option')    
-model.supply_from_ST=Var(model.set_time,model.set_finance_options,model.set_ST2,initialize =0 ,within=NonNegativeReals,doc='Supply from ST per timestep per financing option')    
-model.supply_from_elec_grid=Var(model.set_time,model.set_elec_grid2 ,initialize =0 ,within=NonNegativeReals,doc='Supply from electric grid per timestep per financing option')    
-model.supply_from_Car=Var(model.set_time,model.set_finance_options,model.set_Car2,initialize =0 ,within=NonNegativeReals,doc='Supply from Car Battery per timestep per financing option')    
-model.supply_to_Car=Var(model.set_time,model.set_finance_options,model.set_2Car,initialize =0 ,within=NonNegativeReals,doc='Supply to Car Battery per timestep per financing option')    
-model.supply_from_battery=Var(model.set_time,model.set_finance_options,model.set_Battery2,initialize =0 ,within=NonNegativeReals,doc='Supply from stationary Battery per timestep per financing option') 
+# model.capacity_PV=Var(set_finance_options, bounds=(0,2000),within=NonNegativeReals,doc='Installed PV capacity per financing option')
+# model.area_ST=Var(set_finance_options, bounds=(0,2000),within=NonNegativeReals,doc='Installed ST area per financing option')
+# model.capacity_HP=Var(set_finance_options, bounds=(0,2000),within=NonNegativeReals,doc='Installed HP capacity per financing option')
+# model.reduction_demand_th=Var(set_finance_options, bounds=(0,2000),within=NonNegativeReals,doc='Percentual reduction of heat load per financing option')
+# model.capacity_battery=Var(set_finance_options, bounds=(0,2000),within=NonNegativeReals,doc='Capacity of stationary battery per financing option')
+# model.powerflow_battery=Var(set_finance_options, bounds=(0,2000),within=NonNegativeReals,doc='Powerflow of stationary battery per financing option')
+# model.charging_stations=Var(set_finance_options, bounds=(0,2000),within=NonNegativeReals,doc='Number of charging stations per financing option')
+model.capacity=Var(model.set_finance_options,model.set_new_technologies, initialize = 0,bounds=(0,2000),within=NonNegativeReals,doc='Newly installed capacity per financing option per technology')
+model.supply_default=Var(model.set_time,model.set_default_technologies, bounds=(0,2000),within=NonNegativeReals,doc='Supply per timestep per default technology')
+model.supply_new=Var(model.set_time,model.set_finance_options,model.set_new_technologies, initialize = 0,bounds=(0,2000),within=NonNegativeReals,doc='Supply per timestepnew per financing option per technology')
+model.supply_from_PV=Var(model.set_time,model.set_finance_options,model.set_PV2,initialize = 0, bounds=(0,2000),within=NonNegativeReals,doc='Supply from PV per timestep per financing option')    
+model.supply_from_ST=Var(model.set_time,model.set_finance_options,model.set_ST2,initialize = 0, bounds=(0,2000),within=NonNegativeReals,doc='Supply from ST per timestep per financing option')    
+model.supply_from_elec_grid=Var(model.set_time,model.set_elec_grid2 ,initialize = 0, bounds=(0,2000),within=NonNegativeReals,doc='Supply from electric grid per timestep per financing option')    
+model.supply_from_car=Var(model.set_time,model.set_finance_options,model.set_car2, initialize = 0,bounds=(0,2000),within=NonNegativeReals,doc='Supply from Car Battery per timestep per financing option')    
+model.supply_to_car=Var(model.set_time,model.set_finance_options,model.set_2car, initialize = 0,bounds=(0,2000),within=NonNegativeReals,doc='Supply from Car Battery per timestep per financing option')    
+model.supply_from_battery=Var(model.set_time,model.set_finance_options,model.set_Battery2,initialize = 0, bounds=(0,2000),within=NonNegativeReals,doc='Supply from stationary Battery per timestep per financing option') 
 model.supply_to_battery=Var(model.set_time,model.set_finance_options,model.set_2Battery,initialize = 0, bounds=(0,2000),within=NonNegativeReals,doc='Supply to stationary Battery per timestep per financing option')       
 model.supply_from_HP=Var(model.set_time,model.set_finance_options,model.set_HP2,initialize = 0, bounds=(0,2000),within=NonNegativeReals,doc='Supply from HP per timestep per financing option')    
 model.supply_to_HP=Var(model.set_time,model.set_finance_options,model.set_2HP, initialize = 0,bounds=(0,2000),within=NonNegativeReals,doc='Supply to HP per timestep per financing option')       
 model.area_PV=Var(model.set_finance_options, initialize = 0,bounds=(0,2000),within=NonNegativeReals,doc='Area of PV built per financing option')    
 model.demand_shift_total=Var(initialize = 1,bounds=(0,2000),within=NonNegativeReals,doc='Total shift of demand in 1 year')
-model.demand_shift_up=Var(model.set_time,bounds=(0,5),within=NonNegativeReals,doc='Shift of charging demand up per timestep [kW]')
-model.demand_shift_down=Var(model.set_time,bounds=(0,5),within=NonNegativeReals,doc='Shift of charging demand up per timestep [kW]')
-model.max_capacity_ST=Var(bounds=(0,2000),within=NonNegativeReals,doc='Max capacity of ST, differs if St can feed into DH or not')
+model.demand_shift_up=Var(model.set_time,bounds=(0,2000),within=NonNegativeReals,doc='Shift of charging demand up per timestep [kW]')
+model.demand_shift_down=Var(model.set_time,bounds=(0,2000),within=NonNegativeReals,doc='Shift of charging demand up per timestep [kW]')
+model.max_capacity_ST=Var(model.set_finance_options,bounds=(0,2000),within=NonNegativeReals,doc='Max capacity of ST, differs if St can feed into DH or not')
 model.reduction_heating_demand=Var(model.set_time,within=NonNegativeReals,doc='Reduction of heat demand after insulation')
 model.reduced_heating_demand=Var(model.set_time,within=NonNegativeReals,doc='Reduced heat demand after insulation')
 model.total_thermal_demand=Var(model.set_time,within=NonNegativeReals,doc='Total thermal demand from DHW and heating')
 model.state_of_charge_battery=Var(model.set_time, initialize = 1,bounds=(0,2000),within=NonNegativeReals,doc='State of charge of stationary battery at every timestep')
-model.state_of_charge_Car=Var(model.set_time, initialize = 1,bounds=(0,2000),within=NonNegativeReals,doc='State of charge of Car at every timestep')
+model.state_of_charge_car=Var(model.set_time, initialize = 1,bounds=(0,2000),within=NonNegativeReals,doc='State of charge of car at every timestep')
 model.number_charging_stations=Var(model.set_finance_options,bounds=(0,2000),within=NonNegativeReals,doc='Number of charging stations by financing option')
 model.up_shifts_in_one_day=Var(initialize = 1,bounds=(0,2000),within=NonNegativeReals,doc='Total shift of demand in 1 year')
 model.down_shifts_in_one_day=Var(initialize = 1,bounds=(0,2000),within=NonNegativeReals,doc='Total shift of demand in 1 year')
 
 #Binary Variables
 model.binary_default_technologies=Var(model.set_default_technologies, initialize = 1, within=Binary,doc='Binary Variable becomes TRUE if technology is installed')
-model.binary_default_technologies['Gas'].fixed=True  #Forcing the default heating sytem
-model.binary_default_technologies['Electricity'].fixed=True  #Electricity connection always exist by default
 model.binary_new_technologies=Var(model.set_finance_options,model.set_new_technologies, initialize = 0, within=Binary,doc='Binary Variable becomes TRUE if technology is installed')
 model.binary_ST_DH=Var(initialize = 1, within=Binary,doc='Binary Variable becomes TRUE if ST AND DH are installed, ST can feed into DH')
 
@@ -143,11 +148,11 @@ model.binary_ST_DH=Var(initialize = 1, within=Binary,doc='Binary Variable become
 #     sum(model.capacity[option] * model.price_invest[option] * model.annuity.value for option in model.options) 
 # model.obj = Objective(rule = cost_rule, sense=minimize, doc='minimize total costs')
 
-
 #Objective
+
+# 
 def cost_rule(model):
-    investment_costs_total=sum(model.annuity*model.capacity[finance_options,new_technologies] * model.cost_new [finance_options,new_technologies,'Investment Price'] \
-        for finance_options in model.set_finance_options for new_technologies in model.set_new_technologies) +\
+    investment_costs_total=sum(model.annuity*model.capacity[finance_options, technologies] * model.cost_new [finance_options, technologies,'Investment Price'] for finance_options in model.set_finance_options for technologies in model.set_new_technologies) +\
         model.binary_ST_DH*model.cost_infrastructure_ST2DH
 
     service_costs_total=sum(model.binary_default_technologies[default_technologies]*model.cost_default[default_technologies,'Service Cost'] \
@@ -220,15 +225,15 @@ def shared_roof_rule (model):
 model.c7 = Constraint(rule= shared_roof_rule, \
     doc='Area of roof is shared by total PV and total ST area (equals ST capacity)')
 
-    # def PV_area_limited_rule (model):
-    #     return 0 <= sum(model.area_PV[finance_options] for finance_options in model.set_finance_options) <= model.area_roof
-    # model.c8 = Constraint(rule= PV_area_limited_rule, \
-    #     doc='Total PV limited by roof area')
+# def PV_area_limited_rule (model):
+#     return 0 <= sum(model.area_PV[finance_options] for finance_options in model.set_finance_options) <= model.area_roof
+# model.c8 = Constraint(rule= PV_area_limited_rule, \
+#     doc='Total PV limited by roof area')
 
-    # def ST_area_limited_rule (model):
-    #     return 0 <= sum(model.capacity[finance_options, 'ST'] for finance_options in model.set_finance_options) <= model.area_roof
-    # model.c8 = Constraint(rule= ST_area_limited_rule, \
-    #     doc='Total PV limited by roof area')
+# def ST_area_limited_rule (model):
+#     return 0 <= sum(model.capacity[finance_options, 'ST'] for finance_options in model.set_finance_options) <= model.area_roof
+# model.c8 = Constraint(rule= ST_area_limited_rule, \
+#     doc='Total PV limited by roof area')
 
 
 #### ST Constraints
@@ -242,21 +247,21 @@ def from_ST_supply_rule(model,time,finance_options):
 model.c10 = Constraint(model.set_time,model.set_finance_options, rule= from_ST_supply_rule, \
     doc='Produced energy from ST equals energy from ST to other elements/technologies')
 
-def ST_max_capacity_rule(model):
-    return model.max_capacity_ST == (1-model.binary_default_technologies['DH'])*model.number_households*\
+def ST_max_capacity_rule(model,finance_options):
+    return model.max_capacity_ST[finance_options] == (1-model.binary_default_technologies['DH'])*model.number_households*\
         model.area_ST_per_person *model.simultaneity+model.binary_default_technologies['DH']*model.area_roof
-model.c11 = Constraint(rule= ST_max_capacity_rule, \
+model.c11 = Constraint(model.set_finance_options,rule= ST_max_capacity_rule, \
     doc='Max capacity ST = max area ST is limited by roof area if DH is installed, if not than limited by DHW demand per person')
 
 def ST_capacity_rule_contractor (model,finance_options):
-    return inequality(model.min_capacity_ST_contractor,model.capacity[finance_options, 'ST'],model.max_capacity_ST) 
-model.c12 = Constraint(model.set_finance_options, rule= PV_capacity_rule_contractor, \
+    return inequality(model.min_capacity_ST_contractor,model.capacity['Contractor', 'ST'],model.max_capacity_ST['Contractor']) 
+model.c12 = Constraint(model.set_finance_options,rule= PV_capacity_rule_contractor, \
     doc='ST capacity=area is limited by maximum capacity given by Area of the roof or DHW demand and minimum set by contractor')
 
-    # def ST_capacity_rule_self_financed (model):
-    #     return inequality(0,model.capacity['Self financed', 'ST'],model.max_capacity_ST) 
-    # model.c12a = Constraint(rule= ST_capacity_rule_self_financed, \
-    #     doc='ST capacity=area is limited by maximum capacity given by Area of the roof or DHW demand')
+# def ST_capacity_rule  (model,finance_options):
+#     return 1 <= model.capacity['Self financed', 'ST'] <= model.max_capacity_ST['Self financed'] 
+# model.c13 = Constraint(model.set_finance_options,rule= ST_capacity_rule  , \
+#     doc='ST capacity is limited by maximum capacity given by Area of the roof or DHW demand')
 
 def ST_binary_if_capacity_rule (model,time,finance_options):
     return (model.binary_new_technologies[finance_options,'ST']* \
@@ -287,17 +292,17 @@ def insulation_no_split_rule (model):
 model.c18 = Constraint(rule= insulation_no_split_rule, \
     doc='Insulation is only financed by one party no split possible')
 
-# #### Stationary Battery Constraints
+#### Stationary Battery Constraints
 def from_battery_supply_rule(model,time,finance_options):
     return model.supply_new[time,finance_options,'Battery Powerflow']== sum(model.supply_from_battery[time,finance_options,Battery2technologies] \
         for Battery2technologies in model.set_Battery2)
 model.c19 = Constraint(model.set_time,model.set_finance_options, rule= from_battery_supply_rule, \
-    doc='Total energy from battery equals energy from battery to other elements/technologies - here only to Car')
+    doc='Total energy from battery equals energy from battery to other elements/technologies - here only to car')
 
 def to_battery_supply_rule(model,time,finance_options):
     return sum(model.supply_to_battery[time,finance_options,toBatterytechnologies] \
         for toBatterytechnologies in model.set_2Battery) == model.supply_from_PV[time,finance_options,'Battery'] +\
-        model.supply_from_elec_grid[time,'Battery'] +model.supply_from_Car[time,finance_options,'Battery']
+        model.supply_from_elec_grid[time,'Battery'] +model.supply_from_car[time,finance_options,'Battery']
 model.c19a = Constraint(model.set_time,model.set_finance_options, rule= to_battery_supply_rule, \
     doc='Total energy to battery equals energy to battery from other elements/technologies')  
 
@@ -345,10 +350,10 @@ model.c25 = Constraint(model.set_time,model.set_finance_options,rule= battery_bi
 
 def battery_no_split_rule (model):
     return model.binary_new_technologies['Contractor','Battery Capacity']+model.binary_new_technologies['Self financed','Battery Capacity'] <= 1
-model.c26 = Constraint(rule= battery_no_split_rule, \
+model.c26 = Constraint(rule= insulation_no_split_rule, \
     doc='Battery is only financed by one party no split possible')
 
-# #### Heating System Constraints
+#### Heating System Constraints
 def only_one_heating_system_rule (model):
     return sum(model.binary_new_technologies[finance_options,'HP'] for finance_options in model.set_finance_options) \
         +model.binary_default_technologies['DH']+model.binary_default_technologies['Gas'] <= 1
@@ -367,7 +372,7 @@ def DH_output_if_installed_rule (model,time):
 model.c29 = Constraint(model.set_time,rule= DH_output_if_installed_rule, \
     doc='DH can only supply if installed')
 
-# #### Heat Pump Constraints
+#### Heat Pump Constraints
 def from_HP_supply_rule(model,time,finance_options):
     return model.supply_new[time,finance_options,'HP']== sum(model.supply_from_HP[time,finance_options,HP2technologies] \
         for HP2technologies in model.set_HP2)
@@ -398,77 +403,77 @@ def HP_no_split_rule (model):
 model.c33 = Constraint(rule= HP_no_split_rule, \
     doc='HP is only financed by one party no split possible')
 
-# #### Charging Station Constraints
+#### Charging Station Constraints
 
-def from_Car_supply_rule(model,time,finance_options):
-    return model.supply_new[time,finance_options,'Charging Station']== sum(model.supply_from_Car[time,finance_options,Car2technologies] \
-        for Car2technologies in model.set_Car2)
-model.c34 = Constraint(model.set_time,model.set_finance_options, rule= from_Car_supply_rule, \
+def from_car_supply_rule(model,time,finance_options):
+    return model.supply_new[time,finance_options,'Charging Station']== sum(model.supply_from_car[time,finance_options,Car2technologies] \
+        for Car2technologies in model.set_car2)
+model.c34 = Constraint(model.set_time,model.set_finance_options, rule= from_car_supply_rule, \
     doc='Total energy from Cars equals energy from Cars to other elements/technologies - here only to Battery')
 
-def to_Car_supply_rule(model,time,finance_options):
-    return sum(model.supply_to_Car[time,finance_options,toCartechnologies] \
-        for toCartechnologies in model.set_2Car) == model.supply_from_PV[time,finance_options,'Car'] +\
+def to_car_supply_rule(model,time,finance_options):
+    return sum(model.supply_to_car[time,finance_options,toCartechnologies] \
+        for toCartechnologies in model.set_2car) == model.supply_from_PV[time,finance_options,'Car'] +\
         model.supply_from_battery[time,finance_options,'Car']+model.supply_from_elec_grid[time,'Car']
-model.c34a = Constraint(model.set_time,model.set_finance_options, rule= to_Car_supply_rule, \
-    doc='Total energy to Car equals energy to Car from other elements/technologies')     
+model.c34a = Constraint(model.set_time,model.set_finance_options, rule= to_car_supply_rule, \
+    doc='Total energy to car equals energy to car from other elements/technologies')     
 
-def efficiency_Car_rule(model,time,finance_options):
-    return sum(model.supply_to_Car[time,finance_options,toCartechnologies] \
-        for toCartechnologies in model.set_2Car) *model.efficiency_battery_Car == model.supply_new[time,finance_options,'Charging Station']
-model.c35 = Constraint(model.set_time,model.set_finance_options, rule= efficiency_Car_rule, \
+def efficiency_car_rule(model,time,finance_options):
+    return sum(model.supply_to_car[time,finance_options,toCartechnologies] \
+        for toCartechnologies in model.set_Car) *model.efficiency_battery_car == model.supply_new[time,finance_options,'Charging Station']
+model.c35 = Constraint(model.set_time,model.set_finance_options, rule= efficiency_HP_rule, \
     doc='Input times efficiency equals Car output')
 
 def amount_charging_stations_rule(model):
     return sum(model.number_charging_stations[finance_options]for finance_options in model.set_finance_options) ==\
-        model.number_Cars
+        model.number_cars
 model.c36 = Constraint(rule= amount_charging_stations_rule, \
-    doc='Number of charging stations by financing options need to cover demand for charging station (now equals number of Cars)')
+    doc='Number of charging stations by financing options need to cover demand for charging station (now equals number of cars)')
 
-# #### Battery of Cars Constraints
+#### Battery of Cars Constraints
 
-def Car_powerflow_battery_out_limited_rule(model,time,finance_options):
-    return inequality(0,model.supply_new[time,finance_options,'Charging Station'],model.powerflow_max_battery_Car)
-model.c37 = Constraint(model.set_time,model.set_finance_options, rule= Car_powerflow_battery_out_limited_rule, \
-    doc='Powerflow out of Car battery cannot extend max powerflow')
+def car_powerflow_battery_out_limited_rule(model,time,finance_options):
+    return inequality(0,model.supply_new[time,finance_options,'Charging Station'],model.powerflow_max_battery_car)
+model.c37 = Constraint(model.set_time,model.set_finance_options, rule= car_powerflow_battery_out_limited_rule, \
+    doc='Powerflow out of car battery cannot extend max powerflow')
 
-def Car_powerflow_battery_in_limited_rule (model,time,finance_options):
-    return inequality(0,sum(model.supply_to_Car[time,finance_options,toCartechnologies] \
-        for toCartechnologies in model.set_2Car),model.powerflow_max_battery_Car)
-model.c38 = Constraint(model.set_time,model.set_finance_options, rule= Car_powerflow_battery_in_limited_rule, \
-    doc='Powerflow into Car battery cannot extend max powerflow')
+def car_powerflow_battery_in_limited_rule (model,time,finance_options):
+    return inequality(0,sum(model.supply_to_car[time,finance_options,toCartechnologies] \
+        for toCartechnologies in model.set_2car),model.powerflow_max_battery_car)
+model.c38 = Constraint(model.set_time,model.set_finance_options, rule= car_powerflow_battery_in_limited_rule, \
+    doc='Powerflow into car battery cannot extend max powerflow')
 
-def Car_soc_limited_by_capapcity_rule(model,time):
-    return model.state_of_charge_Car[time] <= model.capacity_Car
-model.c39 = Constraint(model.set_time, rule= Car_soc_limited_by_capapcity_rule, \
-    doc='SOC of Car at every timestep is limited by capacity of battery')
+def car_soc_limited_by_capapcity_rule(model,time):
+    return model.state_of_charge_car[time] <= model.capacity_car
+model.c39 = Constraint(model.set_time, rule= car_soc_limited_by_capapcity_rule, \
+    doc='SOC of car at every timestep is limited by capacity of battery')
 
-def Car_soc_rule (model, time,finance_options):
+def car_soc_rule (model, time,finance_options):
     if time == model.set_time[1]:
-        return model.state_of_charge_Car[time] == 0.
+        return model.state_of_charge_car[time] == 0.
 
     else:
-        return model.state_of_charge_Car[time] == model.state_of_charge_Car[time-1] \
-        + (sum(model.supply_to_Car[time,finance_options,toCartechnologies] \
-        for toCartechnologies in model.set_2Car)*model.efficiency_battery_Car)- \
-            ((sum(model.supply_from_Car[time,finance_options,Car2technologies] \
-            for Car2technologies in model.set_Car2)/model.efficiency_battery_Car)) \
+        return model.state_of_charge_car[time] == model.state_of_charge_car[time-1] \
+        + (sum(model.supply_to_car[time,finance_options,toCartechnologies] \
+        for toCartechnologies in model.set_2car)*model.efficiency_battery_car)- \
+            ((sum(model.supply_from_car[time,finance_options,Car2technologies] \
+            for Car2technologies in model.set_car2)/model.efficiency_battery_car)) \
                 + model.demand_shift_up[time] -model.demand_shift_down[time]
-model.c40 = Constraint(model.set_time,model.set_finance_options, rule= Car_soc_rule, \
-      doc='SOC Car defined by in- and output puls minus demand shift')
+model.c40 = Constraint(model.set_time,model.set_finance_options, rule= car_soc_rule, \
+      doc='SOC car defined by in- and output puls minus demand shift')
 
 def charged_by_soc_rule(model,time):
-    return  model.state_of_charge_Car[time] == model.demand[time,'Car']
+    return  model.state_of_charge_car[time] == model.demand[time,'Car']
 model.c41 = Constraint(model.set_time,rule= charged_by_soc_rule, \
     doc='Demand curve of charging needs to be met')
 
-# def demand_charging_rule(model,time):
-#     return  model.supply_from_elec_grid[time,'Car']+ \
-#         sum(model.supply_from_PV[time,finance_options,'Car'] for finance_options in model.set_finance_options) +\
-#         sum(model.supply_from_battery[time,finance_options,'Car'] for finance_options in model.set_finance_options) \
-#         == model.demand[time,'Car']
-# model.c41a = Constraint(model.set_time,rule= demand_charging_rule, \
-#     doc='Demand curve of charging needs to be met')
+def demand_charging_rule(model,time):
+    return  model.supply_from_elec_grid[time,'Car']+ \
+        sum(model.supply_from_PV[time,finance_options,'Car'] for finance_options in model.set_finance_options) +\
+        sum(model.supply_from_battery[time,finance_options,'Car'] for finance_options in model.set_finance_options) \
+        == model.demand[time,'Car']
+model.c41a = Constraint(model.set_time,rule= demand_charging_rule, \
+    doc='Demand curve of charging needs to be met')
 
 #### Multi Party House Constraints
 def household_electricity_demand_rule(model,time):
@@ -503,36 +508,34 @@ def from_grid_supply_rule(model,time):
 model.c46 = Constraint(model.set_time, rule= from_grid_supply_rule, \
     doc='Total energy from electric grid equals energy from electric grid to other elements/technologies')
 
+#### Demand Side Management Constraints
+# def dsm_rule_per_day(model,time):
+#     up_shifts_in_one_day=[]
+#     down_shifts_in_one_day=[]
+#     up_shift=0
+#     down_shift=0
+#     start_day=1
+#     end_day=2
+#     start_year=1
+#     end_year=int((len(model.set_time))/2)
+#     for time in model.set_time in range(start_year,end_year+1):
+#         for time in model.set_time in range (start_day,end_day+1):
+#             if time <= 24:
+#                 up_shift=up_shift+model.demand_shift_up[time]
+#                 down_shift=down_shift+model.demand_shift_down[time]
+#             else:
+#                 break
+#         up_shifts_in_one_day.append(up_shift)
+#         down_shifts_in_one_day.append(down_shift)
+#         start=start+2
+#         end=end+2
+#         up_shift
+#         down_shift=0
+#     return up_shifts_in_one_day,down_shifts_in_one_day
 
-
-# #### Demand Side Management Constraints
-# # def dsm_rule_per_day(model,time):
-# #     up_shifts_in_one_day=[]
-# #     down_shifts_in_one_day=[]
-# #     up_shift=0
-# #     down_shift=0
-# #     start_day=1
-# #     end_day=2
-# #     start_year=1
-# #     end_year=int((len(model.set_time))/2)
-# #     for time in model.set_time in range(start_year,end_year+1):
-# #         for time in model.set_time in range (start_day,end_day+1):
-# #             if time <= 24:
-# #                 up_shift=up_shift+model.demand_shift_up[time]
-# #                 down_shift=down_shift+model.demand_shift_down[time]
-# #             else:
-# #                 break
-# #         up_shifts_in_one_day.append(up_shift)
-# #         down_shifts_in_one_day.append(down_shift)
-# #         start=start+2
-# #         end=end+2
-# #         up_shift
-# #         down_shift=0
-# #     return up_shifts_in_one_day,down_shifts_in_one_day
-
-# # dsm_rule_per_day(model,model.set_time)
-# # up_shifts_in_one_day.pprint()
-# # down_shifts_in_one_day.pprint()
+# dsm_rule_per_day(model,model.set_time)
+# up_shifts_in_one_day.pprint()
+# down_shifts_in_one_day.pprint()
 
 
 def dsm_rule_per_day(model,time):
@@ -557,7 +560,7 @@ doc='Sum of upshifts and downshifts within one year equals total shift')
 
 # def to_battery_supply_rule(model,time,finance_options):
 #     return model.supply_new[time,finance_options,'Battery Capacity']== model.supply_from_PV[time,finance_options,'Battery'] + \
-#         model.supply_from_elec_grid[time,finance_options,'Battery'] + model.supply_from_Car[time,finance_options,'Battery'] 
+#         model.supply_from_elec_grid[time,finance_options,'Battery'] + model.supply_from_car[time,finance_options,'Battery'] 
 # model.c19 = Constraint(model.set_time,model.set_finance_options, rule= to_battery_supply_rule, \
 #     doc='Total energy to battery equals energy to battery from other elements/technologies')
 
@@ -566,27 +569,14 @@ doc='Sum of upshifts and downshifts within one year equals total shift')
 opt = SolverFactory('glpk')
 results=opt.solve(model)
 
-# results.write(num=1)
 # instance = model.create_instance()
 # model.pprint()
+# model.c6.pprint()
 # model.c34a.pprint()
-#model.c42.pprint()
-# model.obj.pprint()
-
-
 status = results.solver.status
 termination_condition = results.solver.termination_condition
 print('termination_condition: ', termination_condition)
 print('status: ', status)
-
-# for p in instance.supply_from_PV_index:
-#     print(instance.supply_from_PV[p].value)
-
-# for v in instance.component_objects(Var, active=True):
-#     print ("Variable component object",v)
-#     for index in v:
-#         print ("   ", index, v[index].value)
-
 
 print('Total Cost:',round(model.obj()), 'Total annual costs')
 
@@ -612,7 +602,11 @@ print('Capacity HP Contractor',model.capacity['Contractor','HP'].value)
 print('Sum supply HP Self financed:', round(sum(model.supply_new[time,'Self financed','HP'].value for time in model.set_time)),'kWh')
 print('Sum supply HP Contractor:', round(sum(model.supply_new[time,'Contractor','HP'].value for time in model.set_time)),'kWh')
 
-print('Sum supply electric Grid:', round(sum(model.supply_from_elec_grid[time,'Household'].value for time in model.set_time)),'kWh')
+print('Sum supply electric Grid to household:', round(sum(model.supply_from_elec_grid[time,'Household'].value for time in model.set_time)),'kWh')
+print('Sum supply electric Grid to all elements:', round(sum(model.supply_from_elec_grid[time,grid2technologies].value for time in model.set_time \
+    for grid2technologies in model.set_elec_grid2)),'kWh')
+print('Sum supply electric Grid to all elements - check :', round(sum(model.supply_default[time,'Electricity'].value for time in model.set_time)),'kWh')    
+
 print('Sum supply DH:', round(sum(model.supply_default[time,'DH'].value for time in model.set_time)),'kWh')
 print('Sum supply Gas:', round(sum(model.supply_default[time,'Gas'].value for time in model.set_time)),'kWh')
 
@@ -620,35 +614,16 @@ print('PV Self financed installed?',model.binary_new_technologies['Self financed
 print('PV Contractor installed?',model.binary_new_technologies['Contractor','PV'].value)
 print('ST Self financed installed?',model.binary_new_technologies['Self financed','ST'].value)
 print('ST Contractor installed?',model.binary_new_technologies['Contractor','ST'].value)
+
 print('Gas installed?',model.binary_default_technologies['Gas'].value)
 
 
-print('Total supply to Car Contractor:',round(sum(model.supply_to_Car[time,'Contractor',toCartechnologies].value for time in model.set_time for toCartechnologies in model.set_2Car)),'kWh')
-print('Total supply to Car self financed:',round(sum(model.supply_to_Car[time,'Self financed',toCartechnologies].value for time in model.set_time for toCartechnologies in model.set_2Car)),'kWh')
+print('Total supply to Car Contractor:',round(sum(model.supply_to_car[time,'Contractor',toCartechnologies].value for time in model.set_time for toCartechnologies in model.set_2car)),'kWh')
+print('Total supply to Car self financed:',round(sum(model.supply_to_car[time,'Self financed',toCartechnologies].value for time in model.set_time for toCartechnologies in model.set_2car)),'kWh')
 
-print('Total supply from Car self financed:',round(sum(model.supply_from_Car[time,'Contractor',Car2technologies].value for time in model.set_time for Car2technologies in model.set_Car2)),'kWh')
-print('Total supply from Car self financed:',round(sum(model.supply_from_Car[time,'Self financed',Car2technologies].value for time in model.set_time for Car2technologies in model.set_Car2)),'kWh')
+print('Total supply from Car self financed:',round(sum(model.supply_from_car[time,'Contractor',Car2technologies].value for time in model.set_time for Car2technologies in model.set_car2)),'kWh')
+print('Total supply from Car self financed:',round(sum(model.supply_from_car[time,'Self financed',Car2technologies].value for time in model.set_time for Car2technologies in model.set_car2)),'kWh')
              
 print('PV to Car',round(sum(model.supply_from_PV[time,finance_options,'Car'].value for time in model.set_time for finance_options in model.set_finance_options)),'kWh')
 print('Battery to Car',round(sum(model.supply_from_battery[time,finance_options,'Car'].value for time in model.set_time for finance_options in model.set_finance_options)),'kWh')
 print('grid to Car',round(sum(model.supply_from_elec_grid[time,'Car'].value for time in model.set_time for finance_options in model.set_finance_options)),'kWh')
-
-# for time in model.set_time:
-#     print(model.state_of_charge_Car[time].value)
-
-# for time in model.set_time:
-#     print(model.demand_shift_up[time].value)
-
-#  
-# model.cost_service = Param(model.technologies, initialize = dict_cost_service,doc='Annual service and maintenance Costs (lump-sum costs)')
-# model.price_connection = Param(model.technologies, initialize = dict_price_connection,doc='Annual connection price per kW')
-# model.price_fuel = Param(model.technologies, initialize = dict_price_fuel,doc='Fuel price per kWh')
-# model.price_invest_contractor = Param(model.technologies, initialize = dict_price_invest_contractor,doc='Prices for initial investment by contractor')
-# model.cost_service_contractor = Param(model.technologies, initialize = dict_cost_service_contractor,doc='Annual service and maintenance Costs (lump-sum costs) by contractor'')
-# model.price_connection_contractor = Param(model.technologies, initialize = dict_price_connection_contractor,doc='Annual connection price per kW by contractor'')
-# model.price_fuel_contractor = Param(model.technologies, initialize = dict_price_fuel_contractor,doc='Fuel price per kWh by contractor'')
-# model.price_invest_default = Param(model.technologies, initialize = dict_price_invest_default,doc='Prices for initial investment for default elements')
-# model.cost_service_default = Param(model.technologies, initialize = dict_cost_service_default,doc='Annual service and maintenance Costs (lump-sum costs) for default elements')
-# model.price_connection_default = Param(model.technologies, initialize = dict_price_connection_default,doc='Annual connection price per kW for default elements')
-# model.price_fuel_default = Param(model.technologies, initialize = dict_price_fuel_default,doc='Fuel price per kWh for default elements')
-# model.price_feedin_default = Param(model.technologies, initialize = dict_price_feedin_default,doc='Feedin priced for default elements')

@@ -54,7 +54,7 @@ def read_general_data():
     return (dict_general_parameters)
 # (dict_general_parameters)=read_general_data()
 
-# print('dict_general_parameters: ', dict_general_parameters['Number of cars'])
+# print('dict_general_parameters: ', dict_general_parameters['Number of Cars'])
 
 def calculate_annuity_factor():
     '''
@@ -122,6 +122,7 @@ def read_demand_data():
     (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
         set_PV2,set_ST2,set_elec_grid2,set_Car2,set_2Car,set_Battery2,set_2Battery,set_HP2,set_2HP)=read_set_data()
     (dict_general_parameters)=read_general_data()
+
     demand_df = pd.read_excel(io=input_file_path, sheet_name='Demand').reset_index().dropna().set_index('Time')
 
     dict_demand = dict()
@@ -129,7 +130,7 @@ def read_demand_data():
         for idx2 in set_demand:
             dict_demand[idx1, idx2] = demand_df.loc[idx1][idx2]
     for idx1 in set_time:
-        dict_demand[idx1, 'Car'] = dict_demand[idx1, 'Car']*dict_general_parameters['Number of cars']
+        dict_demand[idx1, 'Car'] = dict_demand[idx1, 'Car']*dict_general_parameters['Number of Cars']
     return(dict_demand)
 
 # dict_demand=read_demand_data()
@@ -141,6 +142,7 @@ def read_max_demand():
     '''
     (set_time,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
         set_PV2,set_ST2,set_elec_grid2,set_Car2,set_2Car,set_Battery2,set_2Battery,set_HP2,set_2HP)=read_set_data()
+    (dict_general_parameters)=read_general_data()
 
     demand_df = pd.read_excel(io=input_file_path, sheet_name='Demand').reset_index().dropna().set_index('Time')
     
@@ -149,8 +151,11 @@ def read_max_demand():
         max_value=demand_df[idx1].max()
         dict_max_demand[idx1]=max_value
 
-    max_electric_demand=dict_max_demand['Car']+dict_max_demand['Electricity household']
-    max_thermal_demand=dict_max_demand['DHW']+dict_max_demand['Heating']   
+    max_electric_demand=dict_max_demand['Car'] +dict_max_demand['Electricity household']
+    max_thermal_demand=dict_max_demand['DHW']+dict_max_demand['Heating']
+    # max_electric_demand=dict_max_demand['Car']*dict_general_parameters['Number of Cars']\
+    #     +dict_max_demand['Electricity household']*dict_general_parameters['Number of households']
+    # max_thermal_demand=(dict_max_demand['DHW']+dict_max_demand['Heating'])**dict_general_parameters['Number of households']
 
     dict_max_demand_default={'Electricity':max_electric_demand,'DH': max_thermal_demand, 'Gas': max_thermal_demand}
     
@@ -158,6 +163,7 @@ def read_max_demand():
 
 
 # (dict_max_demand,dict_max_demand_default) =read_max_demand()
+# print('dict_max_demand: ', dict_max_demand)
 # print('dict_max_demand_default: ', dict_max_demand_default)
 
 
@@ -371,10 +377,10 @@ def calculate_performance_PV():
     # param_capacity_density_PV=general_df.at['Area PV','Value']
     # param_specific_DHW_demand=general_df.at['DOW p.P.','Value']
     # param_powerflow_max_battery=general_df.at['Maximum Powerflow Battery','Value']
-    # param_powerflow_max_battery_car=general_df.at['Maximum Powerflow Battery Car','Value']
-    # param_capacity_car=general_df.at['Capacity Battery Car','Value']
+    # param_powerflow_max_battery_Car=general_df.at['Maximum Powerflow Battery Car','Value']
+    # param_capacity_Car=general_df.at['Capacity Battery Car','Value']
     # param_efficiency_battery=general_df.at['Efficiency Battery Car','Value']
-    # param_efficiency_battery_car=general_df.at['Efficiency Battery Car','Value']
+    # param_efficiency_battery_Car=general_df.at['Efficiency Battery Car','Value']
     # param_efficiency_gas=general_df.at['Efficiency Gas Boiler','Value']
     # param_number_chargingstations=general_df.at['Number of charging stations','Value']
     # param_number_households=general_df.at['Number of household','Value']
