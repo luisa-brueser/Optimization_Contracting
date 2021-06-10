@@ -84,11 +84,11 @@ new = {**results_supply, **results_demand}
 df = pd.DataFrame.from_dict(data=new).T
 
 # df_demand = pd.DataFrame.from_dict(data=demand)
-print("df: ", df)
+# print("df: ", df)
 
-with open("test.csv", "w") as file:
-    # txt.write("string")
-    df.to_csv(file)
+# with open("test.csv", "w") as file:
+#     # txt.write("string")
+#     df.to_csv(file)
 
 # for option in model.options:
 #     for time in model.time:
@@ -128,23 +128,23 @@ with open("test.csv", "w") as file:
 
 # print('data_results: ', data_results)
 
-# df = pyam.IamDataFrame(output_file_path)
+df = pyam.IamDataFrame(output_file_path)
 
 
-# model, scenario = 'Contracting_model', 'Contracting_1'
+model, scenario = 'Contracting_model', 'Contracting_1'
 
-# data = df.filter(model=model, scenario=scenario)
+data = df.filter(model=model, scenario=scenario)
 
-# fig, ax = plt.subplots()
-# df.plot(ax=ax, legend=True, color='region', title='Contracting model with DSM, shifting limited to 5kW',linewidth=2.5)
+fig, ax = plt.subplots()
+df.plot(ax=ax, legend=True, color='region', title='Contracting model with DSM, shifting limited to 5kW',linewidth=2.5)
 # a = ax.get_lines()
 
 
 # a[1].set_linestyle('dotted')
 # a[2].set_linestyle('dashed')
 
-# plt.xlabel('time [h]')
-# plt.show()
+plt.xlabel('time [h]')
+plt.show()
 
 # print(data.timeseries())
 
