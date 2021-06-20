@@ -948,3 +948,6 @@ model.c_grid1= Constraint(model.set_time, rule= from_grid_supply_rule, \
 #         >= model.demand[time,'Car'] #+ model.demand_shift_up[time] -model.demand_shift_down[time]
 # model.c_car_bat6 = Constraint(model.set_time,rule= demand_charging_rule, \
 #     doc='Demand curve of charging needs to be met')
+
+
+

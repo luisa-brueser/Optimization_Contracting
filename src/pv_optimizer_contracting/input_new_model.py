@@ -137,6 +137,8 @@ def read_demand_data():
 # dict_demand=read_demand_data()
 # print('dict_demand: ', dict_demand)
 
+
+
 def read_max_demand():
     '''
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
@@ -394,7 +396,7 @@ def calculate_performance_PV():
 # num_list=range(start,end+1)
 # final_sum=sum(num_list)
 
-dict_demand=read_demand_data()
+# dict_demand=read_demand_data()
 # print('dict_demand: ', dict_demand)
 # print('dict_demand: ', dict_demand)
 
