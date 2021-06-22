@@ -12,23 +12,7 @@ plt.close("all")
 output_file_path = Path(__file__).parent / "data_output_new_model.csv"
 # output_file_path_demand = Path(__file__).parent / 'data_output_demand.csv'
 
-# df = pyam.IamDataFrame(output_file_path)
-# df
-
-
-# model, scenario = 'Luisa', 'Contracting1'
-
-# # data = (
-# #     df.filter(model=model, scenario=scenario, variable='Supply_PV')
-# #     .filter(region='Vienna')
-# # )
-
-# df.plot(color='region', title='Test')
-
-# plt.show()
-# print(data.timeseries())
-
-
+##### shows capacity for newly installed capacities
 capacity_Contractor = [
     model.capacity["Contractor", "PV"].value,
     model.capacity["Contractor", "ST"].value,
@@ -50,7 +34,7 @@ rects2 = ax2.bar(
     x + width / 2, capacity_Self_financed, width, label="Capacity Self financed"
 )
 
-# Add some text for labels, title and custom x-ax2is tick labels, etc.
+# Add some text for labels, title and custom x-axis tick labels, etc.
 ax2.set_ylabel("kW/m²/psc")
 ax2.set_title("New Technology investments")
 ax2.set_xticks(x)
