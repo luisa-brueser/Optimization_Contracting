@@ -1,5 +1,45 @@
 Model,Scenario,Region,Variable,Unit,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24
-Contracting_model,Contracting_1,Car,Demand,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,44.0,44.0,44.0,44.0,0.0,0.0,0.0,0.0,0.0
-Contracting_model,Contracting_1,DHW,Demand,kW,0,0,0,0,0,5,5,5,5,5,2,2,2,2,2,2,2,2,5,5,5,5,0,0,0
-Contracting_model,Contracting_1,Electricity household,Demand,kW,0,0,0,0,0,5,5,5,5,5,4,4,6,6,6,4,4,5,5,5,5,5,3,3,0
-Contracting_model,Contracting_1,Heating,Demand,kW,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Contracting_model,Extreme 1,Vienna,Demand|Car,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,44.0,44.0,44.0,44.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,Vienna,Demand|DHW,kW,0,0,0,0,0,5,5,5,5,5,2,2,2,2,2,2,2,2,5,5,5,5,0,0,0
+Contracting_model,Extreme 1,Vienna,Demand|Electricity household,kW,0,0,0,0,0,5,5,5,5,5,4,4,6,6,6,4,4,5,5,5,5,5,3,3,0
+Contracting_model,Extreme 1,Vienna,Demand|Heating,kW,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Contracting_model,Extreme 1,Vienna,Supply|Contractor|PV,kW,0.0,0.0,0.0,0.0,0.0,0.0,15.6145,40.8408,65.0884666666667,86.0776583333333,74.8498666666667,93.8054333333333,76.0326416666667,43.108175,30.9111,39.097025,34.085425,11.9461833333333,0.959933333333333,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,Vienna,Supply|Contractor|ST,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,Vienna,Supply|Contractor|HP,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,Vienna,Supply|Contractor|Insulation,kW,,,,,,,,,,,,,,,,,,,,,,,,,
+Contracting_model,Extreme 1,Vienna,Supply|Contractor|Battery Capacity,kW,,,,,,,,,,,,,,,,,,,,,,,,,
+Contracting_model,Extreme 1,Vienna,Supply|Contractor|Battery Powerflow,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,Vienna,Supply|Contractor|Charging Station,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,PV,Supply|Self financed|PV,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,ST,Supply|Self financed|ST,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,HP,Supply|Self financed|HP,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,Insulation,Supply|Self financed|Insulation,kW,,,,,,,,,,,,,,,,,,,,,,,,,
+Contracting_model,Extreme 1,Battery Capacity,Supply|Self financed|Battery Capacity,kW,,,,,,,,,,,,,,,,,,,,,,,,,
+Contracting_model,Extreme 1,Battery Powerflow,Supply|Self financed|Battery Powerflow,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,Charging Station,Supply|Self financed|Charging Station,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,Vienna,Capacity|Contractor|PV,kW,166.666666666667,,,,,,,,,,,,,,,,,,,,,,,,
+Contracting_model,Extreme 1,Vienna,Capacity|Contractor|ST,kW,0.0,,,,,,,,,,,,,,,,,,,,,,,,
+Contracting_model,Extreme 1,Vienna,Capacity|Contractor|HP,kW,0.0,,,,,,,,,,,,,,,,,,,,,,,,
+Contracting_model,Extreme 1,Vienna,Capacity|Contractor|Insulation,kW,0.0,,,,,,,,,,,,,,,,,,,,,,,,
+Contracting_model,Extreme 1,Vienna,Capacity|Contractor|Battery Capacity,kW,0.0,,,,,,,,,,,,,,,,,,,,,,,,
+Contracting_model,Extreme 1,Vienna,Capacity|Contractor|Battery Powerflow,kW,0.0,,,,,,,,,,,,,,,,,,,,,,,,
+Contracting_model,Extreme 1,Vienna,Capacity|Contractor|Charging Station,kW,2.0,,,,,,,,,,,,,,,,,,,,,,,,
+Contracting_model,Extreme 1,Vienna,Capacity|Self financed|PV,kW,0.0,,,,,,,,,,,,,,,,,,,,,,,,
+Contracting_model,Extreme 1,Vienna,Capacity|Self financed|ST,kW,0.0,,,,,,,,,,,,,,,,,,,,,,,,
+Contracting_model,Extreme 1,Vienna,Capacity|Self financed|HP,kW,0.0,,,,,,,,,,,,,,,,,,,,,,,,
+Contracting_model,Extreme 1,Vienna,Capacity|Self financed|Insulation,kW,0.0,,,,,,,,,,,,,,,,,,,,,,,,
+Contracting_model,Extreme 1,Vienna,Capacity|Self financed|Battery Capacity,kW,0.0,,,,,,,,,,,,,,,,,,,,,,,,
+Contracting_model,Extreme 1,Vienna,Capacity|Self financed|Battery Powerflow,kW,0.0,,,,,,,,,,,,,,,,,,,,,,,,
+Contracting_model,Extreme 1,Vienna,Capacity|Self financed|Charging Station,kW,0.0,,,,,,,,,,,,,,,,,,,,,,,,
+Contracting_model,Extreme 1,Car,Supply from PV|Self financed|Car,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,Electric Grid,Supply from PV|Self financed|Electric Grid,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,Battery,Supply from PV|Self financed|Battery,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,Household,Supply from PV|Self financed|Household,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,HP,Supply from PV|Self financed|HP,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,Curtailment,Supply from PV|Self financed|Curtailment,kW,0.0,0.0,0.0,0.0,0.0,0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,Vienna,Supply from PV|Contractor|Car,kW,0.0,0.0,0.0,0.0,0.0,0.0,6.66666666666666,3.33333333333333,10.0,10.0,10.0,0.0,0.0,0.0,0.0,0.0,34.0,11.9461833333333,0.959933333333333,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,Vienna,Supply from PV|Contractor|Electric Grid,kW,0.0,0.0,0.0,0.0,0.0,0.0,3.94783333333334,32.5074666666667,50.0884666666667,71.0776583333333,60.8498666666667,89.8054333333333,70.0326416666667,37.108175,24.9111,35.097025,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,Vienna,Supply from PV|Contractor|Battery,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,Vienna,Supply from PV|Contractor|Household,kW,0.0,0.0,0.0,0.0,0.0,0.0,5.0,5.0,5.0,5.0,4.0,4.0,6.0,6.0,6.0,4.0,0.0854249999999936,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,Vienna,Supply from PV|Contractor|HP,kW,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+Contracting_model,Extreme 1,Vienna,Supply from PV|Contractor|Curtailment,kW,0.0,0.0,0.0,0.0,0.0,0.0,-0.0,7.105427357601e-15,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,0.0,0.0,0.0,0.0,0.0,0.0

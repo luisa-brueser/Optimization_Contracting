@@ -144,7 +144,7 @@ df.plot(ax=ax, legend=True, color='region', title='Contracting model with DSM, s
 # a[2].set_linestyle('dashed')
 
 plt.xlabel('time [h]')
-plt.show()
+# plt.show()
 
 # print(data.timeseries())
 
@@ -217,3 +217,8 @@ plt.show()
 # plt.show()
 
 # print(data.timeseries())
+
+
+
+
+#

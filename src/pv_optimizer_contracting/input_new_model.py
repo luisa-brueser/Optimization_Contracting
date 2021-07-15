@@ -158,12 +158,11 @@ def read_max_demand():
     # max_thermal_demand=dict_max_demand['DHW']+dict_max_demand['Heating']
     max_electric_demand=dict_max_demand['Car']*dict_general_parameters['Number of Cars']\
         +dict_max_demand['Electricity household']*dict_general_parameters['Number of households']
-    max_thermal_demand=(dict_max_demand['DHW']+dict_max_demand['Heating'])**dict_general_parameters['Number of households']
+    max_thermal_demand=(dict_max_demand['DHW']+dict_max_demand['Heating'])*dict_general_parameters['Number of households']
 
     dict_max_demand_default={'Electricity':max_electric_demand,'DH': max_thermal_demand, 'Gas': max_thermal_demand}
     
     return(dict_max_demand,dict_max_demand_default)    
-
 
 # (dict_max_demand,dict_max_demand_default) =read_max_demand()
 # print('dict_max_demand: ', dict_max_demand)
