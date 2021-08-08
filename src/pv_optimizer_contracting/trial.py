@@ -1710,8 +1710,9 @@ model.c_dsm10 = Constraint(
 
 
 opt = SolverFactory("glpk")
-results = opt.solve(model)
-
+# results = opt.solve(model,tee=True) 
+results = opt.solve(model) 
+model.pprint() 
 # instance = model.create_instance()
 # model.cPV2.pprint()
 # model.ccost4.pprint()

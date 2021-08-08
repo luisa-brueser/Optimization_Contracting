@@ -4,7 +4,8 @@ import numpy as np
 import pyam
 from pyam.plotting import OUTSIDE_LEGEND
 import matplotlib.pyplot as plt
-from pv_optimizer_contracting.new_model import model
+# from pv_optimizer_contracting.new_model_copy import model
+from new_model import model
 from pprint import pprint
 
 output_file_path = Path(__file__).parent / "data_output.csv"
