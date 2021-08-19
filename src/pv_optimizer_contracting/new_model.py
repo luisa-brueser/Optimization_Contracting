@@ -436,7 +436,7 @@ model.shifted_demand = Var(
 # Binary Variables
 model.binary_default_technologies = Var(
     model.set_default_technologies,
-    initialize={"Electricity": 1, "DH": 0, "Gas": 1},
+    initialize={"Electricity": 1, "DH": 1, "Gas": 0},
     within=Binary,
     doc="Binary Variable becomes TRUE if technology is installed",
 )
@@ -454,7 +454,7 @@ model.binary_ST = Var(
     doc="Binary Variable becomes TRUE if ST is installed",
 )
 
-model.binary_default_technologies["Gas"].fix(1)
+# model.binary_default_technologies["Gas"].fix(1)
 # model.binary_new_technologies['Self financed','ST'].fixed=True
 # model.binary_new_technologies['Self financed','ST'].value=0
 # model.binary_new_technologies['Contractor','ST'].fixed=True
@@ -1648,15 +1648,15 @@ model.c_grid1 = Constraint(
 )
 
 ## Demand Side Management Constraints
-# def no_shift_rule (model):
-#     return sum(model.demand_shift_up[time] for time in model.set_time) == 0
-# model.c_dsm0a= Constraint(rule= no_shift_rule, \
-#     doc='Up shift in timestep 1 is zero as SOC of car is also zero')
+def no_shift_rule (model):
+    return sum(model.demand_shift_up[time] for time in model.set_time) == 0
+model.c_dsm0a= Constraint(rule= no_shift_rule, \
+    doc='Up shift in timestep 1 is zero as SOC of car is also zero')
 
-# def no_shift_rule_2 (model):
-#     return sum(model.demand_shift_down[time] for time in model.set_time) == 0
-# model.c_dsm0b= Constraint(rule= no_shift_rule_2, \
-#     doc='Up shift in timestep 1 is zero as SOC of car is also zero')
+def no_shift_rule_2 (model):
+    return sum(model.demand_shift_down[time] for time in model.set_time) == 0
+model.c_dsm0b= Constraint(rule= no_shift_rule_2, \
+    doc='Up shift in timestep 1 is zero as SOC of car is also zero')
 
 
 def first_up_shift_rule(model):
@@ -1754,15 +1754,15 @@ model.c_dsm8 = Constraint(
 )
 
 
-# def up_or_down_in_one_timestep_rule(model, time):
-#     return model.binary_up_shift[time] + model.binary_down_shift[time] <= 1
+def up_or_down_in_one_timestep_rule(model, time):
+    return model.binary_up_shift[time] + model.binary_down_shift[time] <= 1
 
 
-# model.c_dsm9 = Constraint(
-#     model.set_time,
-#     rule=up_or_down_in_one_timestep_rule,
-#     doc="up OR down shift in one timestep",
-# )
+model.c_dsm9 = Constraint(
+    model.set_time,
+    rule=up_or_down_in_one_timestep_rule,
+    doc="up OR down shift in one timestep",
+)
 
 # def total_dsm_rule(model):
 #     return model.demand_shift_total \
@@ -2032,11 +2032,11 @@ print('Capacity ST Contractor',(model.capacity['Contractor', "ST"].value))
 # print('Capacity Battery Contractor',round(model.capacity['Contractor','Battery Capacity'].value))
 
 
-# print('Sum supply electric Grid to household:', round(sum(model.supply_from_elec_grid[time,'Household'].value for time in model.set_time)),'kWh')
+print('Sum supply electric Grid to household:', round(sum(model.supply_from_elec_grid[time,'Household'].value for time in model.set_time)),'kWh')
 
-# print('Sum supply electric Grid to Car:', round(sum(model.supply_from_elec_grid[time,'Car'].value for time in model.set_time)),'kWh')
-# print('Sum supply electric Grid to all elements:', round(sum(model.supply_from_elec_grid[time,grid2technologies].value for time in model.set_time \
-#     for grid2technologies in model.set_elec_grid2)),'kWh')
+print('Sum supply electric Grid to Car:', round(sum(model.supply_from_elec_grid[time,'Car'].value for time in model.set_time)),'kWh')
+print('Sum supply electric Grid to all elements:', round(sum(model.supply_from_elec_grid[time,grid2technologies].value for time in model.set_time \
+    for grid2technologies in model.set_elec_grid2)),'kWh')
 # # print('Sum supply electric Grid to all elements - check :', round(sum(model.supply_default[time,'Electricity'].value for time in model.set_time)),'kWh')
 
 # # print('Sum supply DH:', round(sum(model.supply_default[time,'DH'].value for time in model.set_time)),'kWh')
@@ -2056,13 +2056,13 @@ print(
 print(
     "ST Contractor installed?", model.binary_new_technologies['Contractor','ST'].value
 )
-# print(
-#     "HP Self financed installed?",
-#     model.binary_new_technologies["Self financed", "HP"].value,
-# )
-# print(
-#     "HP Contractor installed?", model.binary_new_technologies["Contractor", "HP"].value
-# )
+print(
+    "HP Self financed installed?",
+    model.binary_new_technologies["Self financed", "HP"].value,
+)
+print(
+    "HP Contractor installed?", model.binary_new_technologies["Contractor", "HP"].value
+)
 print("DH installed?", model.binary_default_technologies["DH"].value)
 
 print("DH AND ST installed?", model.binary_ST_and_DH.value)
