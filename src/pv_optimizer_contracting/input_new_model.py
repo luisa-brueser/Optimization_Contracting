@@ -2,8 +2,10 @@
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
+from pprint import pprint
 
-input_file_path = Path(__file__).parent / 'data_input_one_month_one_household_one_car_extreme_2.xlsx'
+
+input_file_path = Path(__file__).parent / 'data_input_one_month_one_household_one_car.xlsx'
 
 # param_interest_rate= general_df.at[0,2]
 # print('param_interest_rate: ', param_interest_rate)
@@ -18,8 +20,10 @@ def read_set_data():
     set_day = dict.fromkeys(set_df['Days'].dropna(),0)
     set_finance_options= dict.fromkeys(set_df['Finance Options'].dropna(),0)
     set_technologies = dict.fromkeys(set_df['Elements'].dropna(),0)
+    set_insulation_options = dict.fromkeys(set_df['Insulation Option'].dropna(),0)
     set_default_technologies = dict.fromkeys(set_df['Default Elements'].dropna(),0)
     set_costs = dict.fromkeys(set_df['Cost type'].dropna(),0)
+    set_costs_insulation = dict.fromkeys(set_df['Cost type insulation'].dropna(),0)
     set_costs_default= dict.fromkeys(set_df['Cost type default'].dropna(),0)
     set_demand= dict.fromkeys(set_df['Demand'].dropna(),0)
     set_PV2= dict.fromkeys(set_df['PV to'].dropna(),0)
@@ -31,11 +35,11 @@ def read_set_data():
     set_2Battery= dict.fromkeys(set_df['to Battery'].dropna(),0)
     set_HP2= dict.fromkeys(set_df['HP to'].dropna(),0)
     set_2HP= dict.fromkeys(set_df['to HP'].dropna(),0)
-    return (set_time,set_day,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
+    return (set_time,set_day,set_finance_options,set_technologies,set_insulation_options,set_default_technologies,set_costs,set_costs_insulation,set_costs_default,set_demand, \
         set_PV2,set_ST2,set_elec_grid2,set_Car2,set_2Car,set_Battery2,set_2Battery,set_HP2,set_2HP)
 
 
-(set_time,set_day,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
+(set_time,set_day,set_finance_options,set_technologies,set_insulation_options,set_default_technologies,set_costs,set_costs_insulation,set_costs_default,set_demand, \
         set_PV2,set_ST2,set_elec_grid2,set_Car2,set_2Car,set_Battery2,set_2Battery,set_HP2,set_2HP)=read_set_data()
 # print('set_2Battery: ', set_2Battery)
 # print('set_time: ', set_time)
@@ -73,7 +77,7 @@ def read_cost_data():
     '''
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
     '''
-    (set_time,set_day,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
+    (set_time,set_day,set_finance_options,set_technologies,set_insulation_options,set_default_technologies,set_costs,set_costs_insulation,set_costs_default,set_demand, \
         set_PV2,set_ST2,set_elec_grid2,set_Car2,set_2Car,set_Battery2,set_2Battery,set_HP2,set_2HP)=read_set_data()
 
     cost_new_df = pd.read_excel(io=input_file_path, sheet_name='Costs new investments').dropna().set_index(['Finance Options','Elements'])._drop_axis('Unit',0,level=1)
@@ -91,12 +95,22 @@ def read_cost_data():
         for idx2 in set_costs_default :
             dict_cost_default[idx1, idx2] = cost_default_df.loc[idx1][idx2]
 
-    return (dict_cost_new,dict_cost_default)
 
-# (dict_cost_new,dict_cost_default)=read_cost_data()
+    cost_insulation_df =pd.read_excel(io=input_file_path, sheet_name='Costs insulation').dropna().set_index(['Finance Options','Insulation Options'])._drop_axis('Unit',0,level=1)
+
+    dict_cost_insulation = dict()
+    for idx1 in set_finance_options :
+        for idx2 in set_insulation_options :
+            for idx3 in set_costs_insulation: 
+                dict_cost_insulation [idx1, idx2, idx3] = cost_insulation_df.loc[(idx1,idx2),idx3]
+
+    return (dict_cost_new,dict_cost_default,dict_cost_insulation)
+
+(dict_cost_new,dict_cost_default,dict_cost_insulation)=read_cost_data()
 # print('dict_cost_default: ', dict_cost_default)
 # print('dict_cost_new: ', dict_cost_new)
 
+pprint(dict_cost_insulation)
 # print('dict_cost_new: ', dict_cost_new['Investment Price'])
 # dict_you_want = { 'Investment Price': dict_cost_new['Investment Price'] for your_key in your_keys }
 
@@ -120,7 +134,7 @@ def read_demand_data():
     '''
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
     '''
-    (set_time,set_day,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
+    (set_time,set_day,set_finance_options,set_technologies,set_insulation_options,set_default_technologies,set_costs,set_costs_insulation,set_costs_default,set_demand, \
         set_PV2,set_ST2,set_elec_grid2,set_Car2,set_2Car,set_Battery2,set_2Battery,set_HP2,set_2HP)=read_set_data()
     (dict_general_parameters)=read_general_data()
 
@@ -143,7 +157,7 @@ def read_max_demand():
     '''
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
     '''
-    (set_time,set_day,set_finance_options,set_technologies,set_default_technologies,set_costs,set_costs_default,set_demand, \
+    (set_time,set_day,set_finance_options,set_technologies,set_insulation_options,set_default_technologies,set_costs,set_costs_insulation,set_costs_default,set_demand, \
         set_PV2,set_ST2,set_elec_grid2,set_Car2,set_2Car,set_Battery2,set_2Battery,set_HP2,set_2HP)=read_set_data()
     (dict_general_parameters)=read_general_data()
 

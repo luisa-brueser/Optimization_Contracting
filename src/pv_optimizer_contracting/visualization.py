@@ -238,25 +238,30 @@ data_supply_from_PV_contractor.plot(
 )
 plt.xlabel('time [h]')
 
-fig, ax = plt.subplots()
+
 data_supply_from_PV_self_financed = df.filter(model=model, scenario=scenario,variable='Supply from PV|Self financed|*')
 data_supply_from_PV_self_financed.plot(
-    ax=ax, 
+    #ax=ax, 
     legend=True, color="variable", title="Supply from PV Self financed", linewidth=2.5
+)
+plt.xlabel('time [h]')
+# a = ax.get_lines()
+# # a[2].set_color(color)
+# a[3].set_linestyle('dotted')
+# a[5].set_linestyle('dashed')
+
+fig, ax = plt.subplots()
+data_demand = df.filter(model=model, scenario=scenario,variable='Demand|*')
+data_demand.plot(
+    ax=ax, 
+    legend=True, color="variable", title="Demand", linewidth=2.5
 )
 plt.xlabel('time [h]')
 a = ax.get_lines()
 # a[2].set_color(color)
 a[3].set_linestyle('dotted')
-a[5].set_linestyle('dashed')
+a[4].set_linestyle('dashed')
 
-data_demand = df.filter(model=model, scenario=scenario,variable='Demand|*')
-data_demand.plot(
-    #ax=ax, 
-    legend=True, color="variable", title="Demand", linewidth=2.5
-)
-plt.xlabel('time [h]')
-# a = ax.get_lines()
 
 data_binary_new= df.filter(variable="Binary_New_Technology|Contractor|*")
 data_binary_new.plot.bar(title="Installed Capacities by Contractor Binary Variable")
