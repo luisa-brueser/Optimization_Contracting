@@ -19,8 +19,10 @@ model = ConcreteModel()
     set_day,
     set_finance_options,
     set_technologies,
+    set_insulation_options,
     set_default_technologies,
     set_costs,
+    set_costs_insulation,
     set_costs_default,
     set_demand,
     set_PV2,
@@ -35,7 +37,7 @@ model = ConcreteModel()
 ) = read_set_data()
 (dict_general_parameters) = read_general_data()
 (annuity_factor) = calculate_annuity_factor()
-(dict_cost_new, dict_cost_default) = read_cost_data()
+(dict_cost_new, dict_cost_default, dict_cost_insulation) = read_cost_data()
 (dict_demand) = read_demand_data()
 (dict_max_demand, dict_max_demand_default) = read_max_demand()
 (dict_irradiation, dict_temperature) = read_weather_data()
@@ -53,6 +55,10 @@ model.set_new_technologies = Set(
     initialize=set_technologies.keys(),
     doc="Technologies/Elements that can be financed e.g, PV, HP etc.",
 )
+model.set_insulation_options = Set(
+    initialize=set_insulation_options.keys(),
+    doc="Insulation options that can be chosen, 25%,50%, or 75%, reduction of the heating load",
+)
 model.set_default_technologies = Set(
     initialize=set_default_technologies.keys(),
     doc="Default elements that already exist e.g. electricity, gas, DH",
@@ -60,6 +66,10 @@ model.set_default_technologies = Set(
 model.set_costs_new = Set(
     initialize=set_costs.keys(),
     doc="Types of costs for newly installed technologies e.g. investment,service,connection, fuel",
+)
+model.set_costs_insulation = Set(
+    initialize=set_costs_insulation.keys(),
+    doc="Types of costs for insulation e.g. investment and service",
 )
 model.set_costs_default = Set(
     initialize=set_costs_default.keys(),
@@ -212,6 +222,13 @@ model.cost_new = Param(
     model.set_costs_new,
     initialize=dict_cost_new,
     doc="Prices for initial investment",
+)
+model.cost_insulation = Param(
+    model.set_finance_options,
+    model.set_insulation_options,
+    model.set_costs_insulation,
+    initialize=dict_cost_insulation,
+    doc="Prices for insulation measurements",
 )
 model.cost_default = Param(
     model.set_default_technologies,
@@ -393,7 +410,7 @@ model.demand_shift_down = Var(
 # model.demand_shift_down[12].fixed=True
 # model.demand_shift_down[12].value=0
 model.max_capacity_ST = Var(
-    #model.set_finance_options,
+    # model.set_finance_options,
     within=NonNegativeReals,
     doc="Max capacity of ST, differs if St can feed into DH or not",
 )
@@ -452,6 +469,14 @@ model.binary_new_technologies = Var(
     doc="Binary Variable becomes TRUE if technology is installed",
 )
 
+model.binary_insulation = Var(
+    model.set_finance_options,
+    model.set_insulation_options,
+    initialize=0,
+    within=Binary,
+    doc="Binary Variable becomes TRUE if insulation option is installed",
+)
+
 model.binary_ST = Var(
     initialize=0,
     within=Binary,
@@ -471,7 +496,7 @@ model.binary_ST_and_DH = Var(
     doc="Binary Variable becomes TRUE if ST AND DH are installed, ST can feed into DH",
 )
 
-model.binary_ST_to_DH  = Var(
+model.binary_ST_to_DH = Var(
     initialize=0,
     within=Binary,
     doc="Binary Variable becomes TRUE if ST feeds to DH",
@@ -523,9 +548,20 @@ def investment_costs_rule(model):
             for finance_options in model.set_finance_options
             for technologies in model.set_new_technologies
         )
+        + sum(
+            model.annuity
+            * model.binary_insulation[finance_options, insulation_options]
+            * model.cost_insulation[
+                finance_options, insulation_options, "Investment Price"
+            ]
+            for finance_options in model.set_finance_options
+            for insulation_options in model.set_insulation_options
+        )
         + model.binary_ST_and_DH * model.cost_infrastructure_ST2DH
     )
 
+
+####maybe investment price for insulation per m² outside walls
 
 model.ccost1 = Constraint(
     rule=investment_costs_rule, doc="Initital investment cost per installed capacity"
@@ -542,6 +578,11 @@ def service_costs_rule(model):
         * model.cost_new[finance_options, new_technologies, "Service Cost"]
         for finance_options in model.set_finance_options
         for new_technologies in model.set_new_technologies
+    ) + sum(
+        model.binary_insulation[finance_options, insulation_options]
+        * model.cost_insulation[finance_options, insulation_options, "Service Cost"]
+        for finance_options in model.set_finance_options
+        for insulation_options in model.set_insulation_options
     )
 
 
@@ -749,6 +790,7 @@ model.cPV7 = Constraint(
 
 #### ST Constraints
 
+
 def ST_production_rule(model, time, finance_options):
     return model.supply_new[time, finance_options, "ST"] == (
         model.capacity[finance_options, "ST"]
@@ -766,11 +808,14 @@ model.cST1 = Constraint(
 
 
 def from_ST_supply_rule(model, time, finance_options):
-    return  model.supply_new[time, finance_options, "ST"] == (
-        sum(model.supply_from_ST[time, finance_options, ST2technologies]
-        for ST2technologies in model.set_ST2)
+    return model.supply_new[time, finance_options, "ST"] == (
+        sum(
+            model.supply_from_ST[time, finance_options, ST2technologies]
+            for ST2technologies in model.set_ST2
+        )
     )
-        
+
+
 model.cST2 = Constraint(
     model.set_time,
     model.set_finance_options,
@@ -805,8 +850,10 @@ model.cST4 = Constraint(
     doc="ST capacity is limited by maximum capacity given by Area of the roof",
 )
 
+
 def ST_capacity_rule_contractor_2(model):
     return model.min_capacity_ST_contractor <= model.capacity["Contractor", "ST"]
+
 
 model.cST5 = Constraint(
     rule=ST_capacity_rule_contractor_2,
@@ -824,9 +871,6 @@ model.cST6 = Constraint(
 )
 
 
-
-
-
 def ST_binary_if_capacity_rule(model, finance_options):
     return (
         model.binary_new_technologies[finance_options, "ST"] * 10e10
@@ -840,11 +884,11 @@ model.cST7 = Constraint(
     doc="ST can only supply if capacity is installed",
 )
 
-def ST_binary_general (model):
-    return (
-        model.binary_ST *100 >=
-        sum(model.binary_new_technologies[finance_options, "ST"] 
-        for finance_options in model.set_finance_options) 
+
+def ST_binary_general(model):
+    return model.binary_ST * 100 >= sum(
+        model.binary_new_technologies[finance_options, "ST"]
+        for finance_options in model.set_finance_options
     )
 
 
@@ -853,12 +897,11 @@ model.cSTtestnew = Constraint(
     doc="ST can only supply if capacity is installed",
 )
 
+
 def ST_plus_DH_rule(model):
     return (
-        model.binary_ST_and_DH*10e10
-        >= (model.binary_ST +
-        model.binary_default_technologies["DH"]) 
-        -1
+        model.binary_ST_and_DH * 10e10
+        >= (model.binary_ST + model.binary_default_technologies["DH"]) - 1
     )
 
 
@@ -868,11 +911,10 @@ model.cST8 = Constraint(
 )
 
 
-
-def ST_to_DH_supply_if_both_installed_rule(model,time,finance_options):
-    return (model.binary_ST_and_DH *10e10 
-        >= 
-         model.supply_from_ST[time, finance_options, 'DH'] 
+def ST_to_DH_supply_if_both_installed_rule(model, time, finance_options):
+    return (
+        model.binary_ST_and_DH * 10e10
+        >= model.supply_from_ST[time, finance_options, "DH"]
     )
 
 
@@ -884,9 +926,10 @@ model.cST9 = Constraint(
 )
 
 
-def binary_ST_to_DH_supply_rule(model,time, finance_options):
+def binary_ST_to_DH_supply_rule(model, time, finance_options):
     return (
-        model.binary_ST_to_DH * 10e10 >= model.supply_from_ST[time, finance_options, 'DH'] 
+        model.binary_ST_to_DH * 10e10
+        >= model.supply_from_ST[time, finance_options, "DH"]
     )
 
 
@@ -897,10 +940,11 @@ model.cST10 = Constraint(
     doc="binary true if supply from ST to DH",
 )
 
-def ST_binary_if_supply_to_DH_rule(model, time,finance_options):
+
+def ST_binary_if_supply_to_DH_rule(model, time, finance_options):
     return (
-        model.supply_from_ST[time, finance_options, 'DH'] 
-        <= model.binary_default_technologies['DH']* 10e10
+        model.supply_from_ST[time, finance_options, "DH"]
+        <= model.binary_default_technologies["DH"] * 10e10
     )
 
 
@@ -912,12 +956,21 @@ model.cSTtest = Constraint(
 )
 
 
-
 #### Insulation Constraints
 def reduction_heating_demand_rule(model, time):
-    return model.reduction_heating_demand[time] == model.demand[time, "Heating"] * sum(
-        model.capacity[finance_options, "Insulation"]
-        for finance_options in model.set_finance_options
+    return model.reduction_heating_demand[time] == model.demand[time, "Heating"] * (
+        sum(
+            0.25 * model.binary_insulation[finance_options, "Insulation 25%"]
+            for finance_options in model.set_finance_options
+        )
+        + sum(
+            0.5 * model.binary_insulation[finance_options, "Insulation 50%"]
+            for finance_options in model.set_finance_options
+        )
+        + sum(
+            0.75 * model.binary_insulation[finance_options, "Insulation 75%"]
+            for finance_options in model.set_finance_options
+        )
     )
 
 
@@ -928,60 +981,63 @@ model.cins1 = Constraint(
 )
 
 
-# def reduction_heating_demand_if_insulation_rule(model, time, finance_options):
-#     return model.reduction_heating_demand[time] <= (
-#         model.binary_new_technologies[finance_options, "Insulation"]
-#         * 10e10
-#     )
-
-
-# model.cins2 = Constraint(
-#     model.set_time,
-#     model.set_finance_options,
-#     rule=reduction_heating_demand_if_insulation_rule,
-#     doc="Heating demand can only be reduced if insulation is done",
-# )
-
-
-def binary_insulation_if_capacity_rule(model, finance_options):
-    return model.capacity[finance_options, "Insulation"] <= (
-        model.binary_new_technologies[finance_options, "Insulation"]
-        * 10e10
+def reduction_heating_demand_if_insulation_rule(
+    model, time, finance_options, insulation_options
+):
+    return model.reduction_heating_demand[time] <= (
+        model.binary_insulation[finance_options, insulation_options] * 10e10
     )
 
 
 model.cins2 = Constraint(
+    model.set_time,
     model.set_finance_options,
-    rule=binary_insulation_if_capacity_rule,
-    doc="Binary becomes TRUE if insulation is done",
+    model.set_insulation_options,
+    rule=reduction_heating_demand_if_insulation_rule,
+    doc="Heating demand can only be reduced if insulation is done",
 )
 
-# def insulation_no_split_rule(model):
-#     return (
-#         model.binary_new_technologies["Contractor", "Insulation"]
-#         + model.binary_new_technologies["Self financed", "Insulation"]
-#         <= 1
+
+# def binary_insulation_if_capacity_rule(model, finance_options):
+#     return model.capacity[finance_options, "Insulation"] <= (
+#         model.binary_new_technologies[finance_options, "Insulation"] * 10e10
 #     )
 
 
-# model.cins3 = Constraint(
-#     rule=insulation_no_split_rule,
-#     doc="Insulation is only financed by one party no split possible",
+# model.cins2 = Constraint(
+#     model.set_finance_options,
+#     rule=binary_insulation_if_capacity_rule,
+#     doc="Binary becomes TRUE if insulation is done",
 # )
 
-def insulation_no_supply_rule(model, time,finance_options):
+
+def insulation_no_split_rule(model):
     return (
-        model.supply_new[time,finance_options, "Insulation"]
-        ==0
+        sum(
+            model.binary_insulation[finance_options, insulation_options]
+            for finance_options in model.set_finance_options
+            for insulation_options in model.set_insulation_options
+        )
+        <= 1
     )
 
 
-model.cins4 = Constraint(
-    model.set_time,
-    model.set_finance_options,
-    rule=insulation_no_supply_rule,
-    doc="Insulation has no supply",
+model.cins3 = Constraint(
+    rule=insulation_no_split_rule,
+    doc="Insulation is only financed by one party no split possible",
 )
+
+
+# def insulation_no_supply_rule(model, time, finance_options):
+#     return model.supply_new[time, finance_options, "Insulation"] == 0
+
+
+# model.cins4 = Constraint(
+#     model.set_time,
+#     model.set_finance_options,
+#     rule=insulation_no_supply_rule,
+#     doc="Insulation has no supply",
+# )
 
 #### Stationary Battery Constraints
 def from_battery_supply_rule(model, time, finance_options):
@@ -1151,11 +1207,9 @@ model.cbat9 = Constraint(
     doc="Battery is only financed by one party no split possible",
 )
 
-def battery_capacity_no_supply_rule(model, time,finance_options):
-    return (
-        model.supply_new[time,finance_options, "Battery Capacity"]
-        ==0
-    )
+
+def battery_capacity_no_supply_rule(model, time, finance_options):
+    return model.supply_new[time, finance_options, "Battery Capacity"] == 0
 
 
 model.cbat10 = Constraint(
@@ -1185,11 +1239,9 @@ model.c_heating1 = Constraint(
 )
 
 
-
 def gas_output_if_installed_rule(model, time):
     return model.supply_default[time, "Gas"] <= (
-        model.binary_default_technologies["Gas"]
-        * 10000
+        model.binary_default_technologies["Gas"] * 10000
     )
 
 
@@ -1202,8 +1254,7 @@ model.c_heating2 = Constraint(
 
 def DH_output_if_installed_rule(model, time):
     return model.supply_default[time, "DH"] <= (
-        model.binary_default_technologies["DH"]
-        * 10000
+        model.binary_default_technologies["DH"] * 10000
     )
 
 
@@ -1360,6 +1411,7 @@ model.c_HP7 = Constraint(
 #     doc='Supply from car to battery only if battery exists')
 
 ####### Car Charging Constraint
+
 
 def to_car_supply_rule(model, time):
     return (
@@ -1695,15 +1747,23 @@ model.c_grid1 = Constraint(
 )
 
 ## Demand Side Management Constraints
-def no_shift_rule (model):
+def no_shift_rule(model):
     return sum(model.demand_shift_up[time] for time in model.set_time) == 0
-model.c_dsm0a= Constraint(rule= no_shift_rule, \
-    doc='Up shift in timestep 1 is zero as SOC of car is also zero')
 
-def no_shift_rule_2 (model):
+
+model.c_dsm0a = Constraint(
+    rule=no_shift_rule, doc="Up shift in timestep 1 is zero as SOC of car is also zero"
+)
+
+
+def no_shift_rule_2(model):
     return sum(model.demand_shift_down[time] for time in model.set_time) == 0
-model.c_dsm0b= Constraint(rule= no_shift_rule_2, \
-    doc='Up shift in timestep 1 is zero as SOC of car is also zero')
+
+
+model.c_dsm0b = Constraint(
+    rule=no_shift_rule_2,
+    doc="Up shift in timestep 1 is zero as SOC of car is also zero",
+)
 
 
 def first_up_shift_rule(model):
@@ -1777,7 +1837,7 @@ model.c_dsm6 = Constraint(
 
 def binary_if_shift_up_rule(model, time):
     return model.demand_shift_up[time] <= (
-        model.binary_up_shift[time] *100* model.number_cars
+        model.binary_up_shift[time] * 100 * model.number_cars
     )
 
 
@@ -1790,7 +1850,7 @@ model.c_dsm7 = Constraint(
 
 def binary_if_shift_down_rule(model, time):
     return model.demand_shift_down[time] <= (
-        model.binary_down_shift[time]*100*model.number_cars
+        model.binary_down_shift[time] * 100 * model.number_cars
     )
 
 
@@ -1810,7 +1870,6 @@ model.c_dsm9 = Constraint(
     rule=up_or_down_in_one_timestep_rule,
     doc="up OR down shift in one timestep",
 )
-
 
 
 def shifted_demand_rule(model, time):
@@ -1838,9 +1897,8 @@ model.c_dsm10 = Constraint(
 #     doc='Total energy to battery equals energy to battery from other elements/technologies')
 
 
-# model.cST3.pprint()
+model.cins3.pprint()
 # model.ccost2.pprint()
-
 
 
 opt = SolverFactory("glpk")
@@ -1857,17 +1915,18 @@ termination_condition = results.solver.termination_condition
 print("termination_condition: ", termination_condition)
 print("status: ", status)
 
-model.cins2.pprint()
+# model.cins2.pprint()
 
 print("Total Shift", model.demand_shift_total.value)
 
 
-
-
 for day in model.set_day:
-    if model.up_shifts_in_one_day[day].value and model.down_shifts_in_one_day[day].value != 0:
-        print('Up shift one day',day,model.up_shifts_in_one_day[day].value)
-        print('Down shift one day',day,model.down_shifts_in_one_day[day].value)
+    if (
+        model.up_shifts_in_one_day[day].value
+        and model.down_shifts_in_one_day[day].value != 0
+    ):
+        print("Up shift one day", day, model.up_shifts_in_one_day[day].value)
+        print("Down shift one day", day, model.down_shifts_in_one_day[day].value)
 
 for time in model.set_time:
     if model.demand_shift_up[time].value or model.demand_shift_down[time].value != 0:
@@ -1907,23 +1966,88 @@ for time in model.set_time:
 
 # print('Total annual Cost:',round(model.obj()), '€')
 # print('Total inbvestment Cost:', round(model.investment_costs_total.value),'€')
-print('Capacity Insulation Self financed',model.capacity['Self financed','Insulation'].value)
-print('Capacity Insulation Contractor',model.capacity['Contractor','Insulation'].value)
+# print(
+#     "Capacity Insulation Self financed",
+#     model.capacity["Self financed", "Insulation"].value,
+# )
+# print(
+#     "Capacity Insulation Contractor", model.capacity["Contractor", "Insulation"].value
+# )
 
 print("Capacity PV Self financed", round(model.capacity["Self financed", "PV"].value))
 print("Capacity PV Contractor", round(model.capacity["Contractor", "PV"].value))
-print('Sum supply PV Self financed:', round(sum(model.supply_new[time,'Self financed','PV'].value for time in model.set_time)),'kWh')
-print('Sum supply PV Contractor:', round(sum(model.supply_new[time,'Contractor','PV'].value for time in model.set_time)),'kWh')
-print('Sum supply PV to Grid:', round(sum(model.supply_from_PV[time,finance_options,'Electric Grid'].value for time in model.set_time \
-    for finance_options in model.set_finance_options)),'kWh')
-print('Sum supply PV to Household:', round(sum(model.supply_from_PV[time,finance_options,'Household'].value for time in model.set_time \
-    for finance_options in model.set_finance_options)),'kWh')
-print('Sum supply PV to Car:', round(sum(model.supply_from_PV[time,finance_options,'Car'].value for time in model.set_time \
-    for finance_options in model.set_finance_options)),'kWh')
-print('Sum supply PV to Battery:', round(sum(model.supply_from_PV[time,finance_options,'Battery'].value for time in model.set_time \
-    for finance_options in model.set_finance_options)),'kWh')
-print('Sum supply PV to HP:', round(sum(model.supply_from_PV[time,finance_options,'HP'].value for time in model.set_time \
-    for finance_options in model.set_finance_options)),'kWh')
+print(
+    "Sum supply PV Self financed:",
+    round(
+        sum(
+            model.supply_new[time, "Self financed", "PV"].value
+            for time in model.set_time
+        )
+    ),
+    "kWh",
+)
+print(
+    "Sum supply PV Contractor:",
+    round(
+        sum(model.supply_new[time, "Contractor", "PV"].value for time in model.set_time)
+    ),
+    "kWh",
+)
+print(
+    "Sum supply PV to Grid:",
+    round(
+        sum(
+            model.supply_from_PV[time, finance_options, "Electric Grid"].value
+            for time in model.set_time
+            for finance_options in model.set_finance_options
+        )
+    ),
+    "kWh",
+)
+print(
+    "Sum supply PV to Household:",
+    round(
+        sum(
+            model.supply_from_PV[time, finance_options, "Household"].value
+            for time in model.set_time
+            for finance_options in model.set_finance_options
+        )
+    ),
+    "kWh",
+)
+print(
+    "Sum supply PV to Car:",
+    round(
+        sum(
+            model.supply_from_PV[time, finance_options, "Car"].value
+            for time in model.set_time
+            for finance_options in model.set_finance_options
+        )
+    ),
+    "kWh",
+)
+print(
+    "Sum supply PV to Battery:",
+    round(
+        sum(
+            model.supply_from_PV[time, finance_options, "Battery"].value
+            for time in model.set_time
+            for finance_options in model.set_finance_options
+        )
+    ),
+    "kWh",
+)
+print(
+    "Sum supply PV to HP:",
+    round(
+        sum(
+            model.supply_from_PV[time, finance_options, "HP"].value
+            for time in model.set_time
+            for finance_options in model.set_finance_options
+        )
+    ),
+    "kWh",
+)
 
 # print(
 #     "Sum supply PV Contractor:",
@@ -2053,8 +2177,8 @@ print('Sum supply PV to HP:', round(sum(model.supply_from_PV[time,finance_option
 #     "kWh",
 # )
 
-print('Capacity ST Self financed',(model.capacity['Self financed','ST'].value))
-print('Capacity ST Contractor',(model.capacity['Contractor', "ST"].value))
+print("Capacity ST Self financed", (model.capacity["Self financed", "ST"].value))
+print("Capacity ST Contractor", (model.capacity["Contractor", "ST"].value))
 # print('Sum supply ST Self financed:', round(sum(model.supply_new[time,'Self financed','ST'].value for time in model.set_time)),'kWh')
 # print('Sum supply ST Contractor:', round(sum(model.supply_new[time,'Contractor','ST'].value for time in model.set_time)),'kWh')
 # print('Sum supply ST to DH:', round(sum(model.supply_from_ST[time,finance_options,'DH'].value for time in model.set_time \
@@ -2070,18 +2194,52 @@ print('Capacity ST Contractor',(model.capacity['Contractor', "ST"].value))
 
 # print('Sum supply to HP Self financed from grid:', round(sum(model.supply_to_HP[time,'Self financed','Electric Grid'].value for time in model.set_time)),'kWh')
 
-print('Capacity Battery Self financed',round(model.capacity['Self financed','Battery Capacity'].value))
-print('Capacity Battery Contractor',round(model.capacity['Contractor','Battery Capacity'].value))
+print(
+    "Capacity Battery Self financed",
+    round(model.capacity["Self financed", "Battery Capacity"].value),
+)
+print(
+    "Capacity Battery Contractor",
+    round(model.capacity["Contractor", "Battery Capacity"].value),
+)
 
 
-print('Sum supply electric Grid to household:', round(sum(model.supply_from_elec_grid[time,'Household'].value for time in model.set_time)),'kWh')
+print(
+    "Sum supply electric Grid to household:",
+    round(
+        sum(
+            model.supply_from_elec_grid[time, "Household"].value
+            for time in model.set_time
+        )
+    ),
+    "kWh",
+)
 
-print('Sum supply electric Grid to Car:', round(sum(model.supply_from_elec_grid[time,'Car'].value for time in model.set_time)),'kWh')
-print('Sum supply electric Grid to all elements:', round(sum(model.supply_from_elec_grid[time,grid2technologies].value for time in model.set_time \
-    for grid2technologies in model.set_elec_grid2)),'kWh')
+print(
+    "Sum supply electric Grid to Car:",
+    round(
+        sum(model.supply_from_elec_grid[time, "Car"].value for time in model.set_time)
+    ),
+    "kWh",
+)
+print(
+    "Sum supply electric Grid to all elements:",
+    round(
+        sum(
+            model.supply_from_elec_grid[time, grid2technologies].value
+            for time in model.set_time
+            for grid2technologies in model.set_elec_grid2
+        )
+    ),
+    "kWh",
+)
 # # print('Sum supply electric Grid to all elements - check :', round(sum(model.supply_default[time,'Electricity'].value for time in model.set_time)),'kWh')
 
-print('Sum supply DH:', round(sum(model.supply_default[time,'DH'].value for time in model.set_time)),'kWh')
+print(
+    "Sum supply DH:",
+    round(sum(model.supply_default[time, "DH"].value for time in model.set_time)),
+    "kWh",
+)
 # # print('Sum supply Gas:', round(sum(model.supply_default[time,'Gas'].value for time in model.set_time)),'kWh')
 
 print(
@@ -2093,10 +2251,10 @@ print(
 )
 print(
     "ST Self financed installed?",
-    model.binary_new_technologies['Self financed','ST'].value,
+    model.binary_new_technologies["Self financed", "ST"].value,
 )
 print(
-    "ST Contractor installed?", model.binary_new_technologies['Contractor','ST'].value
+    "ST Contractor installed?", model.binary_new_technologies["Contractor", "ST"].value
 )
 print(
     "HP Self financed installed?",
@@ -2122,14 +2280,14 @@ print(
     model.binary_new_technologies["Contractor", "Battery Capacity"].value,
 )
 
-print(
-    "Insulation Self financed done?",
-    model.binary_new_technologies["Self financed", "Insulation"].value,
-)
-print(
-    "Insulation Contractor done?",
-    model.binary_new_technologies["Contractor", "Insulation"].value,
-)
+# print(
+#     "Insulation Self financed done?",
+#     model.binary_new_technologies["Self financed", "Insulation"].value,
+# )
+# print(
+#     "Insulation Contractor done?",
+#     model.binary_new_technologies["Contractor", "Insulation"].value,
+# )
 
 
 # print('Total supply to Car:',round(sum(model.supply_to_car[time,toCartechnologies].value for time in model.set_time for toCartechnologies in model.set_2car)),'kWh')
@@ -2150,9 +2308,30 @@ print(
 #     ),
 # )
 
-print('Total Supply from grid',round(sum(model.supply_default[time,'Electricity'].value for time in model.set_time)),'kWh')
-print('grid to household',round(sum(model.supply_from_elec_grid[time,'Household'].value for time in model.set_time)),'kWh')
-print('grid to HP',round(sum(model.supply_from_elec_grid[time,'HP'].value for time in model.set_time)),'kWh')
+print(
+    "Total Supply from grid",
+    round(
+        sum(model.supply_default[time, "Electricity"].value for time in model.set_time)
+    ),
+    "kWh",
+)
+print(
+    "grid to household",
+    round(
+        sum(
+            model.supply_from_elec_grid[time, "Household"].value
+            for time in model.set_time
+        )
+    ),
+    "kWh",
+)
+print(
+    "grid to HP",
+    round(
+        sum(model.supply_from_elec_grid[time, "HP"].value for time in model.set_time)
+    ),
+    "kWh",
+)
 
 # print('grid to Car 16h',round(model.supply_from_elec_grid[16,'Car'].value))
 # print('PV to Car 16h',round(model.supply_to_car[16,'PV'].value))
@@ -2164,14 +2343,57 @@ print('grid to HP',round(sum(model.supply_from_elec_grid[time,'HP'].value for ti
 # #print('Total supply from Car self financed:',round(sum(model.supply_from_car[time,'Self financed',Car2technologies].value for time in model.set_time for Car2technologies in model.set_car2)),'kWh')
 
 
-print('Thermal demand:', round(sum(model.total_thermal_demand[time].value for time in model.set_time)),'kWh')
-print('Thermal demand need to be covered by:')
-print('Supply gas:',(sum(model.supply_default[time,'Gas'].value for time in model.set_time)),'kWh')
-print('Supply DH:',(sum(model.supply_default[time,'DH'].value for time in model.set_time)),'kWh')
-print('Supply from HP to household Contractor:',(sum(model.supply_from_HP[time,'Contractor','Household'].value for time in model.set_time)),'kWh')
-print('Supply HP to household Contractor - check:',(sum(model.supply_new[time,'Contractor','HP'].value for time in model.set_time)),'kWh')
-print('Supply from HP to household Self financed:',(sum(model.supply_from_HP[time,'Self financed','Household'].value for time in model.set_time)),'kWh')
-print('Supply HP to household Self financed - check:',(sum(model.supply_new[time,'Self financed','HP'].value for time in model.set_time)),'kWh')
+print(
+    "Thermal demand:",
+    round(sum(model.total_thermal_demand[time].value for time in model.set_time)),
+    "kWh",
+)
+print("Thermal demand need to be covered by:")
+print(
+    "Supply gas:",
+    (sum(model.supply_default[time, "Gas"].value for time in model.set_time)),
+    "kWh",
+)
+print(
+    "Supply DH:",
+    (sum(model.supply_default[time, "DH"].value for time in model.set_time)),
+    "kWh",
+)
+print(
+    "Supply from HP to household Contractor:",
+    (
+        sum(
+            model.supply_from_HP[time, "Contractor", "Household"].value
+            for time in model.set_time
+        )
+    ),
+    "kWh",
+)
+print(
+    "Supply HP to household Contractor - check:",
+    (sum(model.supply_new[time, "Contractor", "HP"].value for time in model.set_time)),
+    "kWh",
+)
+print(
+    "Supply from HP to household Self financed:",
+    (
+        sum(
+            model.supply_from_HP[time, "Self financed", "Household"].value
+            for time in model.set_time
+        )
+    ),
+    "kWh",
+)
+print(
+    "Supply HP to household Self financed - check:",
+    (
+        sum(
+            model.supply_new[time, "Self financed", "HP"].value
+            for time in model.set_time
+        )
+    ),
+    "kWh",
+)
 # for time in model.set_time:
 #     print(time, model.supply_from_ST[time,'Contractor','DH'].value)
 
@@ -2179,18 +2401,72 @@ print('Supply HP to household Self financed - check:',(sum(model.supply_new[time
 #     print(time, model.supply_new[time,'Contractor','ST'].value)
 
 
-print('Supply ST to DH Contractor:',round(sum(model.supply_from_ST[time,'Contractor','DH'].value for time in model.set_time)),'kWh')
-print('Supply ST to DH Self financed:',round(sum(model.supply_from_ST[time,'Self financed','DH'].value for time in model.set_time)),'kWh')
+print(
+    "Supply ST to DH Contractor:",
+    round(
+        sum(
+            model.supply_from_ST[time, "Contractor", "DH"].value
+            for time in model.set_time
+        )
+    ),
+    "kWh",
+)
+print(
+    "Supply ST to DH Self financed:",
+    round(
+        sum(
+            model.supply_from_ST[time, "Self financed", "DH"].value
+            for time in model.set_time
+        )
+    ),
+    "kWh",
+)
 
-print('Supply ST to household Contractor:',round(sum(model.supply_from_ST[time,'Contractor','Household'].value for time in model.set_time)),'kWh')
-print('Supply ST to household Self financed:',round(sum(model.supply_from_ST[time,'Self financed','Household'].value for time in model.set_time)),'kWh')
+print(
+    "Supply ST to household Contractor:",
+    round(
+        sum(
+            model.supply_from_ST[time, "Contractor", "Household"].value
+            for time in model.set_time
+        )
+    ),
+    "kWh",
+)
+print(
+    "Supply ST to household Self financed:",
+    round(
+        sum(
+            model.supply_from_ST[time, "Self financed", "Household"].value
+            for time in model.set_time
+        )
+    ),
+    "kWh",
+)
 
-print('Supply ST  Contractor - check:',round(sum(model.supply_new[time,'Contractor','ST'].value for time in model.set_time)),'kWh')
-print('Supply ST  Self financed - check:',round(sum(model.supply_new[time,'Self financed','ST'].value for time in model.set_time)),'kWh')
+print(
+    "Supply ST  Contractor - check:",
+    round(
+        sum(model.supply_new[time, "Contractor", "ST"].value for time in model.set_time)
+    ),
+    "kWh",
+)
+print(
+    "Supply ST  Self financed - check:",
+    round(
+        sum(
+            model.supply_new[time, "Self financed", "ST"].value
+            for time in model.set_time
+        )
+    ),
+    "kWh",
+)
 
-print('Max capacity ST:',round(model.max_capacity_ST.value))
-print('Max capacity PV:',round(model.max_capacity_PV.value))
-print('min capacity ST:',round(model.min_capacity_ST_contractor.value))
+print("Max capacity ST:", round(model.max_capacity_ST.value))
+print("Max capacity PV:", round(model.max_capacity_PV.value))
+print("min capacity ST:", round(model.min_capacity_ST_contractor.value))
 
-print('Reduction of heating Demand:',round(sum(model.reduction_heating_demand[time].value for time in model.set_time)),'kWh')
-
+print(
+    "Reduction of heating Demand:",
+    round(sum(model.reduction_heating_demand[time].value for time in model.set_time)),
+    "kWh",
+)
