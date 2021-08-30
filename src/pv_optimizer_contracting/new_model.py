@@ -476,6 +476,7 @@ model.binary_insulation = Var(
     within=Binary,
     doc="Binary Variable becomes TRUE if insulation option is installed",
 )
+# model.binary_insulation["Contractor", "Insulation 50%"].fix(1)
 
 model.binary_ST = Var(
     initialize=0,
@@ -981,33 +982,20 @@ model.cins1 = Constraint(
 )
 
 
-def reduction_heating_demand_if_insulation_rule(
-    model, time, finance_options, insulation_options
-):
-    return model.reduction_heating_demand[time] <= (
-        model.binary_insulation[finance_options, insulation_options] * 10e10
-    )
-
-
-model.cins2 = Constraint(
-    model.set_time,
-    model.set_finance_options,
-    model.set_insulation_options,
-    rule=reduction_heating_demand_if_insulation_rule,
-    doc="Heating demand can only be reduced if insulation is done",
-)
-
-
-# def binary_insulation_if_capacity_rule(model, finance_options):
-#     return model.capacity[finance_options, "Insulation"] <= (
-#         model.binary_new_technologies[finance_options, "Insulation"] * 10e10
+# def reduction_heating_demand_if_insulation_rule(
+#     model, time, finance_options, insulation_options
+# ):
+#     return model.reduction_heating_demand[time] <= (
+#         model.binary_insulation[finance_options, insulation_options] * 10e10
 #     )
 
 
 # model.cins2 = Constraint(
+#     model.set_time,
 #     model.set_finance_options,
-#     rule=binary_insulation_if_capacity_rule,
-#     doc="Binary becomes TRUE if insulation is done",
+#     model.set_insulation_options,
+#     rule=reduction_heating_demand_if_insulation_rule,
+#     doc="Heating demand can only be reduced if insulation is done",
 # )
 
 
@@ -1897,7 +1885,7 @@ model.c_dsm10 = Constraint(
 #     doc='Total energy to battery equals energy to battery from other elements/technologies')
 
 
-model.cins3.pprint()
+# model.cins3.pprint()
 # model.ccost2.pprint()
 
 
@@ -1906,7 +1894,7 @@ results = opt.solve(model)
 
 # instance = model.create_instance()
 # model.c_dsm6.pprint()
-# model.cins2.pprint()
+# model.cins3.pprint()
 
 # print(model.max_capacity_PV.value)
 
@@ -1914,7 +1902,7 @@ status = results.solver.status
 termination_condition = results.solver.termination_condition
 print("termination_condition: ", termination_condition)
 print("status: ", status)
-
+print("Total Cost:", round(model.obj()), "Total annual costs")
 # model.cins2.pprint()
 
 print("Total Shift", model.demand_shift_total.value)
@@ -2280,14 +2268,14 @@ print(
     model.binary_new_technologies["Contractor", "Battery Capacity"].value,
 )
 
-# print(
-#     "Insulation Self financed done?",
-#     model.binary_new_technologies["Self financed", "Insulation"].value,
-# )
-# print(
-#     "Insulation Contractor done?",
-#     model.binary_new_technologies["Contractor", "Insulation"].value,
-# )
+for finance_options in model.set_finance_options:
+    for insulation_options in model.set_insulation_options:
+        print(
+            "Insulation done?",
+            finance_options,
+            insulation_options,
+            model.binary_insulation[finance_options, insulation_options].value,
+        )
 
 
 # print('Total supply to Car:',round(sum(model.supply_to_car[time,toCartechnologies].value for time in model.set_time for toCartechnologies in model.set_2car)),'kWh')
@@ -2468,5 +2456,20 @@ print("min capacity ST:", round(model.min_capacity_ST_contractor.value))
 print(
     "Reduction of heating Demand:",
     round(sum(model.reduction_heating_demand[time].value for time in model.set_time)),
+    "kWh",
+)
+print(
+    "Reduced heating demand:",
+    round(sum(model.reduced_heating_demand[time].value for time in model.set_time)),
+    "kWh",
+)
+print(
+    "Original heating demand:",
+    round(sum(model.demand[time, "Heating"] for time in model.set_time)),
+    "kWh",
+)
+print(
+    "Total thermal demand:",
+    round(sum(model.total_thermal_demand[time].value for time in model.set_time)),
     "kWh",
 )
