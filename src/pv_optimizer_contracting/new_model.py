@@ -1511,8 +1511,8 @@ def amount_charging_stations_equals_capacity_rule(model, finance_options):
 model.c_car5 = Constraint(
     model.set_finance_options,
     rule=amount_charging_stations_equals_capacity_rule,
-    doc="Number of charging stations by financing options need to cover demand for charging station (now equals number of cars)",
-)  #### Battery of Cars Constraints
+    doc="Number of charging stations is used as capacity (for investment costs etc.)",
+)
 
 
 #### Battery of Cars Constraints
@@ -1642,9 +1642,7 @@ def demand_charging_rule(model, time):
             model.supply_to_car[time, toCartechnologies]
             for toCartechnologies in model.set_2car
         )
-        == model.demand[time, "Car"]
-        + model.demand_shift_up[time]
-        - model.demand_shift_down[time]
+        == model.shifted_demand[time]
     )
 
 
@@ -1670,7 +1668,7 @@ def household_electricity_demand_rule(model, time):
 model.c_house1 = Constraint(
     model.set_time,
     rule=household_electricity_demand_rule,
-    doc="Electricity demand curve of households plus charging need to be met",
+    doc="Electricity demand curve of households needs to be met",
 )
 
 
@@ -1739,9 +1737,7 @@ def no_shift_rule(model):
     return sum(model.demand_shift_up[time] for time in model.set_time) == 0
 
 
-model.c_dsm0a = Constraint(
-    rule=no_shift_rule, doc="Up shift in timestep 1 is zero as SOC of car is also zero"
-)
+model.c_dsm0a = Constraint(rule=no_shift_rule, doc="No up shifts")
 
 
 def no_shift_rule_2(model):
@@ -1750,7 +1746,7 @@ def no_shift_rule_2(model):
 
 model.c_dsm0b = Constraint(
     rule=no_shift_rule_2,
-    doc="Up shift in timestep 1 is zero as SOC of car is also zero",
+    doc="No down shifts",
 )
 
 
@@ -1783,7 +1779,7 @@ def dsm_up_rule_per_day_rule(model, day):
 model.c_dsm3 = Constraint(
     model.set_day,
     rule=dsm_up_rule_per_day_rule,
-    doc="Sum of upshifts equals downshifts within 24h",
+    doc="Up shifts per day equals upshifts within 24h",
 )
 
 
@@ -1796,7 +1792,7 @@ def dsm_down_rule_per_day_rule(model, day):
 model.c_dsm4 = Constraint(
     model.set_day,
     rule=dsm_down_rule_per_day_rule,
-    doc="Sum of upshifts equals downshifts within 24h",
+    doc="Down shifts per day equals downshifts within 24h",
 )
 
 
