@@ -98,20 +98,6 @@ def read_general_data():
     )
     dict_general_parameters = general_df["Value"].to_dict()
 
-    annuity_factor = (
-        (
-            (1 + dict_general_parameters["Interest rate"])
-            ** dict_general_parameters["Depreciation time"]
-        )
-        * dict_general_parameters["Interest rate"]
-    ) / (
-        (
-            (1 + dict_general_parameters["Interest rate"])
-            ** dict_general_parameters["Depreciation time"]
-        )
-        - 1
-    )
-
     return dict_general_parameters
 
 
@@ -212,7 +198,7 @@ def read_cost_data():
     return (dict_cost_new, dict_cost_default, dict_cost_insulation)
 
 
-(dict_cost_new, dict_cost_default, dict_cost_insulation) = read_cost_data()
+# (dict_cost_new, dict_cost_default, dict_cost_insulation) = read_cost_data()
 # print('dict_cost_default: ', dict_cost_default)
 # print('dict_cost_new: ', dict_cost_new)
 
@@ -329,11 +315,11 @@ def read_max_demand():
     max_electric_demand = (
         dict_max_demand["Car"] * dict_general_parameters["Number of Cars"]
         + dict_max_demand["Electricity household"]
-        * dict_general_parameters["Number of households"]
+        # * dict_general_parameters["Number of residents"]
     )
     max_thermal_demand = (
         dict_max_demand["DHW"] + dict_max_demand["Heating"]
-    ) * dict_general_parameters["Number of households"]
+    )  # * dict_general_parameters["Number of residents"]
 
     dict_max_demand_default = {
         "Electricity": max_electric_demand,

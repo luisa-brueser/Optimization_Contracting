@@ -177,8 +177,8 @@ model.number_cars = Param(
     within=Any,
     doc="Number of charging stations (or cars) chosen",
 )
-model.number_households = Param(
-    initialize=dict_general_parameters["Number of households"],
+model.number_residents = Param(
+    initialize=dict_general_parameters["Number of residents"],
     mutable=False,
     within=Any,
     doc="Number of households",
@@ -457,7 +457,7 @@ model.shifted_demand = Var(
 # Binary Variables
 model.binary_default_technologies = Var(
     model.set_default_technologies,
-    initialize={"Electricity": 1, "DH": 1, "Gas": 0},
+    initialize={"Electricity": 1, "DH": 0, "Gas": 1},
     within=Binary,
     doc="Binary Variable becomes TRUE if technology is installed",
 )
@@ -829,7 +829,7 @@ def ST_max_capacity_rule(model):
     return (
         model.max_capacity_ST
         == (1 - model.binary_default_technologies["DH"])
-        * model.number_households
+        * model.number_residents
         * model.area_ST_per_person
         * model.simultaneity
         + model.binary_default_technologies["DH"] * model.area_roof
@@ -927,34 +927,34 @@ model.cST9 = Constraint(
 )
 
 
-def binary_ST_to_DH_supply_rule(model, time, finance_options):
-    return (
-        model.binary_ST_to_DH * 10e10
-        >= model.supply_from_ST[time, finance_options, "DH"]
-    )
+# def binary_ST_to_DH_supply_rule(model, time, finance_options):
+#     return (
+#         model.binary_ST_to_DH * 10e10
+#         >= model.supply_from_ST[time, finance_options, "DH"]
+#     )
 
 
-model.cST10 = Constraint(
-    model.set_time,
-    model.set_finance_options,
-    rule=binary_ST_to_DH_supply_rule,
-    doc="binary true if supply from ST to DH",
-)
+# model.cST10 = Constraint(
+#     model.set_time,
+#     model.set_finance_options,
+#     rule=binary_ST_to_DH_supply_rule,
+#     doc="binary true if supply from ST to DH",
+# )
 
 
-def ST_binary_if_supply_to_DH_rule(model, time, finance_options):
-    return (
-        model.supply_from_ST[time, finance_options, "DH"]
-        <= model.binary_default_technologies["DH"] * 10e10
-    )
+# def ST_binary_if_supply_to_DH_rule(model, time, finance_options):
+#     return (
+#         model.supply_from_ST[time, finance_options, "DH"]
+#         <= model.binary_default_technologies["DH"] * 10e10
+#     )
 
 
-model.cSTtest = Constraint(
-    model.set_time,
-    model.set_finance_options,
-    rule=ST_binary_if_supply_to_DH_rule,
-    doc="ST can only supply if capacity is installed",
-)
+# model.cSTtest = Constraint(
+#     model.set_time,
+#     model.set_finance_options,
+#     rule=ST_binary_if_supply_to_DH_rule,
+#     doc="ST can only supply if capacity is installed",
+# )
 
 
 #### Insulation Constraints
