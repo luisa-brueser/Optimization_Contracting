@@ -123,7 +123,7 @@ model.area_roof = Param(
     doc="Area of the roof [m2], determines limit of PV and ST capacity",
 )
 model.capacity_density_PV = Param(
-    initialize=dict_general_parameters["Area PV"],
+    initialize=dict_general_parameters["Capacity Density PV"],
     mutable=False,
     within=Any,
     doc="Capacity density of PV [kWp/m2]",
@@ -277,7 +277,7 @@ model.temperature_factor_PV = Param(
     doc="kW electricity produced from PV per kWp installes per timestep",
 )
 model.max_capacity_PV = Param(
-    initialize=(model.area_roof / model.capacity_density_PV),
+    initialize=(model.area_roof * model.capacity_density_PV),
     doc="Maximum PV capacity given by area of the roof",
 )
 model.min_capacity_PV_contractor = Param(
@@ -1642,7 +1642,7 @@ def demand_charging_rule(model, time):
             model.supply_to_car[time, toCartechnologies]
             for toCartechnologies in model.set_2car
         )
-        == model.shifted_demand[time]
+        == model.shifted_demand
     )
 
 
