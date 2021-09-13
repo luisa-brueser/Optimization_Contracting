@@ -32,8 +32,8 @@ def read_set_data():
     set_PV2 = dict.fromkeys(set_df["PV to"].dropna(), 0)
     set_ST2 = dict.fromkeys(set_df["ST to"].dropna(), 0)
     set_elec_grid2 = dict.fromkeys(set_df["Electric Grid to"].dropna(), 0)
-    set_Car2 = dict.fromkeys(set_df["Car to"].dropna(), 0)
-    set_2Car = dict.fromkeys(set_df["to Car"].dropna(), 0)
+    set_car2 = dict.fromkeys(set_df["Car to"].dropna(), 0)
+    set_2car = dict.fromkeys(set_df["to Car"].dropna(), 0)
     set_Battery2 = dict.fromkeys(set_df["Battery to"].dropna(), 0)
     set_2Battery = dict.fromkeys(set_df["to Battery"].dropna(), 0)
     set_HP2 = dict.fromkeys(set_df["HP to"].dropna(), 0)
@@ -52,8 +52,8 @@ def read_set_data():
         set_PV2,
         set_ST2,
         set_elec_grid2,
-        set_Car2,
-        set_2Car,
+        set_car2,
+        set_2car,
         set_Battery2,
         set_2Battery,
         set_HP2,
@@ -75,8 +75,8 @@ def read_set_data():
     set_PV2,
     set_ST2,
     set_elec_grid2,
-    set_Car2,
-    set_2Car,
+    set_car2,
+    set_2car,
     set_Battery2,
     set_2Battery,
     set_HP2,
@@ -147,8 +147,8 @@ def read_cost_data():
         set_PV2,
         set_ST2,
         set_elec_grid2,
-        set_Car2,
-        set_2Car,
+        set_car2,
+        set_2car,
         set_Battery2,
         set_2Battery,
         set_HP2,
@@ -240,8 +240,8 @@ def read_demand_data():
         set_PV2,
         set_ST2,
         set_elec_grid2,
-        set_Car2,
-        set_2Car,
+        set_car2,
+        set_2car,
         set_Battery2,
         set_2Battery,
         set_HP2,
@@ -290,8 +290,8 @@ def read_max_demand():
         set_PV2,
         set_ST2,
         set_elec_grid2,
-        set_Car2,
-        set_2Car,
+        set_car2,
+        set_2car,
         set_Battery2,
         set_2Battery,
         set_HP2,
