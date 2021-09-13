@@ -751,7 +751,7 @@ def PV_area_required_rule(model):
             model.capacity[finance_options, "PV"]
             for finance_options in model.set_finance_options
         )
-        * model.capacity_density_PV
+        / model.capacity_density_PV
     )
 
 
@@ -961,15 +961,15 @@ model.cST9 = Constraint(
 def reduction_heating_demand_rule(model, time):
     return model.reduction_heating_demand[time] == model.demand[time, "Heating"] * (
         sum(
-            0.25 * model.binary_insulation[finance_options, "Insulation 25%"]
+            0.1 * model.binary_insulation[finance_options, "Insulation 10%"]
             for finance_options in model.set_finance_options
         )
         + sum(
-            0.5 * model.binary_insulation[finance_options, "Insulation 50%"]
+            0.3 * model.binary_insulation[finance_options, "Insulation 30%"]
             for finance_options in model.set_finance_options
         )
         + sum(
-            0.75 * model.binary_insulation[finance_options, "Insulation 75%"]
+            0.85 * model.binary_insulation[finance_options, "Insulation 85%"]
             for finance_options in model.set_finance_options
         )
     )

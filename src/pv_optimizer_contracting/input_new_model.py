@@ -260,15 +260,16 @@ def read_demand_data():
     for idx1 in set_time:
         for idx2 in set_demand:
             dict_demand[idx1, idx2] = demand_df.loc[idx1][idx2]
-    for idx1 in set_time:
-        dict_demand[idx1, "Car"] = (
-            dict_demand[idx1, "Car"] * dict_general_parameters["Number of Cars"]
-        )
+    # for idx1 in set_time:
+    #     dict_demand[idx1, "Car"] = (
+    #         dict_demand[idx1, "Car"] * dict_general_parameters["Number of Cars"]
+    #     )
+    ############ this only applies if you have one charging curve and want to multiply it with the number of cars
     return dict_demand
 
 
-# dict_demand=read_demand_data()
-# print('dict_demand: ', dict_demand)
+# (dict_demand) = read_demand_data()
+# pprint(dict_demand)
 
 
 def read_max_demand():
@@ -313,7 +314,7 @@ def read_max_demand():
     # max_electric_demand=dict_max_demand['Car'] +dict_max_demand['Electricity household']
     # max_thermal_demand=dict_max_demand['DHW']+dict_max_demand['Heating']
     max_electric_demand = (
-        dict_max_demand["Car"] * dict_general_parameters["Number of Cars"]
+        dict_max_demand["Car"]  # * dict_general_parameters["Number of Cars"]
         + dict_max_demand["Electricity household"]
         # * dict_general_parameters["Number of residents"]
     )
