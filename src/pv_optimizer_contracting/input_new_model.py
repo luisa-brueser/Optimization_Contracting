@@ -6,7 +6,8 @@ from pprint import pprint
 
 
 input_file_path = (
-    Path(__file__).parent / "data_input_one_month_one_household_one_car.xlsx"
+    Path(__file__).parent
+    / "data_input_one_month_one_household_one_car_extreme_1new.xlsx"
 )
 
 # param_interest_rate= general_df.at[0,2]
@@ -126,7 +127,26 @@ def calculate_annuity_factor():
         - 1
     )
 
-    return annuity_factor
+    annuity_factor_insulation = (
+        (
+            (1 + dict_general_parameters["Interest rate"])
+            ** dict_general_parameters["Depreciation time insulation"]
+        )
+        * dict_general_parameters["Interest rate"]
+    ) / (
+        (
+            (1 + dict_general_parameters["Interest rate"])
+            ** dict_general_parameters["Depreciation time insulation"]
+        )
+        - 1
+    )
+
+    return (annuity_factor, annuity_factor_insulation)
+
+
+# (annuity_factor, annuity_factor_insulation) = calculate_annuity_factor()
+# print("annuity_factor_insulation: ", annuity_factor_insulation)
+# print("annuity_factor: ", annuity_factor)
 
 
 def read_cost_data():
@@ -376,13 +396,13 @@ def calculate_COP():
     dict_COP = weather_df["Temperature"].to_dict()
     for key in dict_COP:
         dict_COP[key] = (
-            (dict_COP[key]) / (param_temp_heating - dict_COP[key])
+            (param_temp_heating) / (param_temp_heating - dict_COP[key])
         ) * param_reduction_cop
 
     return dict_COP
 
 
-# dict_COP=calculate_COP()
+# dict_COP = calculate_COP()
 # print(dict_COP)
 
 

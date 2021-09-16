@@ -6,10 +6,10 @@ from pyam.plotting import OUTSIDE_LEGEND
 import matplotlib.pyplot as plt
 
 # from pv_optimizer_contracting.new_model_copy import model
-from new_model import model
+from trial import model
 from pprint import pprint
 
-output_file_path = Path(__file__).parent / "data_output.csv"
+output_file_path = Path(__file__).parent / "data_output_trial.csv"
 
 ######### created bar plot that shows newly installed capacities
 
