@@ -6,9 +6,13 @@ from pprint import pprint
 
 
 input_file_path = (
-    Path(__file__).parent
-    / "data_input_one_month_one_household_one_car_extreme_1new.xlsx"
+    Path(__file__).parent / "data_input_one_month_30_household_3_cars_140kWh_gap_Contractor.xlsx"
 )
+# input_file_path = (
+#     Path(__file__).parent / "data_input_one_month_one_household_one_car.xlsx"
+# )
+
+
 
 # param_interest_rate= general_df.at[0,2]
 # print('param_interest_rate: ', param_interest_rate)
@@ -33,7 +37,7 @@ def read_set_data():
     set_PV2 = dict.fromkeys(set_df["PV to"].dropna(), 0)
     set_ST2 = dict.fromkeys(set_df["ST to"].dropna(), 0)
     set_elec_grid2 = dict.fromkeys(set_df["Electric Grid to"].dropna(), 0)
-    set_car2 = dict.fromkeys(set_df["Car to"].dropna(), 0)
+    # set_car2 = dict.fromkeys(set_df["Car to"].dropna(), 0)
     set_2car = dict.fromkeys(set_df["to Car"].dropna(), 0)
     set_Battery2 = dict.fromkeys(set_df["Battery to"].dropna(), 0)
     set_2Battery = dict.fromkeys(set_df["to Battery"].dropna(), 0)
@@ -53,7 +57,7 @@ def read_set_data():
         set_PV2,
         set_ST2,
         set_elec_grid2,
-        set_car2,
+        # set_car2,
         set_2car,
         set_Battery2,
         set_2Battery,
@@ -76,7 +80,7 @@ def read_set_data():
     set_PV2,
     set_ST2,
     set_elec_grid2,
-    set_car2,
+    # set_car2,
     set_2car,
     set_Battery2,
     set_2Battery,
@@ -167,7 +171,7 @@ def read_cost_data():
         set_PV2,
         set_ST2,
         set_elec_grid2,
-        set_car2,
+        # set_car2,
         set_2car,
         set_Battery2,
         set_2Battery,
@@ -189,7 +193,7 @@ def read_cost_data():
                 dict_cost_new[idx1, idx2, idx3] = cost_new_df.loc[(idx1, idx2), idx3]
 
     cost_default_df = (
-        pd.read_excel(io=input_file_path, sheet_name="Costs default system")
+        pd.read_excel(io=input_file_path, sheet_name="Costs default")
         .dropna()
         .set_index("Elements")
         ._drop_axis("Unit", 0)
@@ -220,9 +224,27 @@ def read_cost_data():
 
 # (dict_cost_new, dict_cost_default, dict_cost_insulation) = read_cost_data()
 # print('dict_cost_default: ', dict_cost_default)
-# print('dict_cost_new: ', dict_cost_new)
 
-# pprint(dict_cost_insulation)
+
+# cost_new_df = (
+#         pd.read_excel(io=input_file_path, sheet_name="Costs new investments")
+#         .dropna()
+#         .set_index(["Finance Options", "Elements"])
+#         ._drop_axis("Unit", 0, level=1)
+#         # .drop(labels=1,axis=0)
+#     )
+
+# print(cost_new_df)
+
+# cost_default_df = (
+#     pd.read_excel(io=input_file_path, sheet_name="Costs default")
+#     .dropna()
+#     .set_index("Elements")
+#     ._drop_axis("Unit", 0))
+
+# print(cost_default_df)
+
+# print(dict_cost_insulation)
 # print('dict_cost_new: ', dict_cost_new['Investment Price'])
 # dict_you_want = { 'Investment Price': dict_cost_new['Investment Price'] for your_key in your_keys }
 
@@ -260,7 +282,7 @@ def read_demand_data():
         set_PV2,
         set_ST2,
         set_elec_grid2,
-        set_car2,
+        # set_car2,
         set_2car,
         set_Battery2,
         set_2Battery,
@@ -310,7 +332,7 @@ def read_max_demand():
         set_PV2,
         set_ST2,
         set_elec_grid2,
-        set_car2,
+        # set_car2,
         set_2car,
         set_Battery2,
         set_2Battery,
@@ -351,9 +373,9 @@ def read_max_demand():
     return (dict_max_demand, dict_max_demand_default)
 
 
-# (dict_max_demand,dict_max_demand_default) =read_max_demand()
-# print('dict_max_demand: ', dict_max_demand)
-# print('dict_max_demand_default: ', dict_max_demand_default)
+# (dict_max_demand, dict_max_demand_default) = read_max_demand()
+# print("dict_max_demand: ", dict_max_demand)
+# print("dict_max_demand_default: ", dict_max_demand_default)
 
 
 def read_weather_data():
@@ -414,14 +436,19 @@ def calculate_performance_PV():
     (dict_irradiation, dict_temperature) = read_weather_data()
     (dict_general_parameters) = read_general_data()
     dict_capacity_factor_PV = dict_irradiation.copy()
+    # for key in dict_capacity_factor_PV:
+    #     dict_capacity_factor_PV[key] = (
+    #         (
+    #             dict_capacity_factor_PV[key]
+    #             * dict_general_parameters["Surface Factor PV"]
+    #         )
+    #         / dict_general_parameters["Irradiation STC"]
+    #     ) * dict_general_parameters["Performance ratio PV"]
+    # for key in dict_capacity_factor_PV:
+    #         dict_capacity_factor_PV[key] = (dict_capacity_factor_PV[key] * dict_general_parameters["Surface Factor PV"]* dict_general_parameters["Performance ratio PV"])
     for key in dict_capacity_factor_PV:
-        dict_capacity_factor_PV[key] = (
-            (
-                dict_capacity_factor_PV[key]
-                * dict_general_parameters["Surface Factor PV"]
-            )
-            / dict_general_parameters["Irradiation STC"]
-        ) * dict_general_parameters["Performance ratio PV"]
+            dict_capacity_factor_PV[key] = (dict_capacity_factor_PV[key] * dict_general_parameters["Surface Factor PV"])
+
 
     dict_temperature_factor_PV = dict_temperature.copy()
     for key in dict_temperature_factor_PV:
@@ -432,7 +459,7 @@ def calculate_performance_PV():
 
 
 # (dict_capacity_factor_PV,dict_temperature_factor_PV)=calculate_performance_PV()
-# print('dict_temperature_factor_PV: ', dict_temperature_factor_PV)
+# # print('dict_temperature_factor_PV: ', dict_temperature_factor_PV)
 # print('dict_capacity_factor: ', dict_capacity_factor_PV)
 
 
