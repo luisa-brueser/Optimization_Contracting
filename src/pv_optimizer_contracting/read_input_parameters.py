@@ -429,29 +429,26 @@ def calculate_COP():
     )
     param_reduction_cop = general_df.at["Reduction COP", "Value"]
     param_temp_heating = general_df.at["Temperature heating", "Value"]
+    param_temp_DHW = general_df.at["Temperature hot water", "Value"]
     dict_temperatur_outside = weather_df["Temperature"].to_dict()
 
-    dict_COP =dict()
+    dict_COP_heating =dict()
+    dict_COP_DHW =dict()
 
     for key in dict_temperatur_outside:
-        dict_COP[key] = (
+        dict_COP_DHW[key] = (
+            (param_temp_DHW+273) / (param_temp_DHW+273 - (dict_temperatur_outside[key]+273))
+            ) * param_reduction_cop
+        dict_COP_heating[key] = (
             (param_temp_heating+273) / (param_temp_heating+273 - (dict_temperatur_outside[key]+273))
             ) * param_reduction_cop
-
-            
-    # for key in dict_temperatur_outside:
-    #     if  dict_temperatur_outside[key] >= 15:
-    #         dict_COP[key] = 0
-    #     else:
-    #         dict_COP[key] = (
-    #             (param_temp_heating+273) / (param_temp_heating+273 - (dict_temperatur_outside[key]+273))
-    #         ) * param_reduction_cop
         
-    return dict_COP
+    return  dict_COP_DHW, dict_COP_heating
 
 
-dict_COP = calculate_COP()
-print(dict_COP)
+# dict_COP_DHW, dict_COP_heating = calculate_COP()
+# print(dict_COP_DHW)
+
 
 
 def calculate_performance_PV():
