@@ -17,13 +17,13 @@ from pprint import pprint
 # output_file_path = Path(__file__).parent / "data_output_trial.csv"
 
 
-output_file_path = Path(__file__).parent / "data_output_one_year_30_household_30_cars_25kWh_scenario3.csv"
+output_file_path = Path(__file__).parent / "data_output_one_year_30_household_30_cars_25kWh_scenario3_24h_summer.csv"
 
 
 
 data_template = {
     "Model": "Contracting_model",
-    "Scenario": "Scenario 3 no DSM",
+    "Scenario": "Scenario 3 24h summer",
     "Region": "Vienna City Border",
     "Variable": None,
     "Unit": "kW",
@@ -138,30 +138,30 @@ for time in model.set_time:
 df_results_demand = pd.DataFrame.from_dict(data=results_demand).T
 # print("df_results_demand: ", df_results_demand)
 
-reduction_heating_demand = dict() 
+# reduction_heating_demand = dict() 
 
-reduction_heating_demand["Contractor"] = None
-reduction_heating_demand["Contractor"] = data_template.copy()
-reduction_heating_demand["Contractor"]["Variable"] = "Reduction Heating Demand|Contractor"
-d = {0: round(sum(model.demand[time, "Heating"] for time in model.set_time)*(
-            0.1 * model.binary_insulation['Contractor', "Insulation 10%"].value
-        + 0.3 * model.binary_insulation['Contractor', "Insulation 30%"].value
-        + 0.85 * model.binary_insulation['Contractor', "Insulation 85%"].value)/sum(model.demand[time, "Heating"] for time in model.set_time)*100)}
+# reduction_heating_demand["Contractor"] = None
+# reduction_heating_demand["Contractor"] = data_template.copy()
+# reduction_heating_demand["Contractor"]["Variable"] = "Reduction Heating Demand|Contractor"
+# d = {0: round(sum(model.demand[time, "Heating"] for time in model.set_time)*(
+#             0.1 * model.binary_insulation['Contractor', "Insulation 10%"].value
+#         + 0.3 * model.binary_insulation['Contractor', "Insulation 30%"].value
+#         + 0.85 * model.binary_insulation['Contractor', "Insulation 85%"].value)/sum(model.demand[time, "Heating"] for time in model.set_time)*100)}
 
-reduction_heating_demand["Contractor"].update(d)
+# reduction_heating_demand["Contractor"].update(d)
 
-reduction_heating_demand["Self financed"] = None
-reduction_heating_demand["Self financed"] = data_template.copy()
-reduction_heating_demand["Self financed"]["Variable"] = "Reduction Heating Demand|Self financed"
-d = {0: round(sum(model.demand[time, "Heating"] for time in model.set_time)*(
-            0.1 * model.binary_insulation['Self financed', "Insulation 10%"].value
-        + 0.3 * model.binary_insulation['Self financed', "Insulation 30%"].value
-        + 0.85 * model.binary_insulation['Self financed', "Insulation 85%"].value)/sum(model.demand[time, "Heating"] for time in model.set_time)*100)}
+# reduction_heating_demand["Self financed"] = None
+# reduction_heating_demand["Self financed"] = data_template.copy()
+# reduction_heating_demand["Self financed"]["Variable"] = "Reduction Heating Demand|Self financed"
+# d = {0: round(sum(model.demand[time, "Heating"] for time in model.set_time)*(
+#             0.1 * model.binary_insulation['Self financed', "Insulation 10%"].value
+#         + 0.3 * model.binary_insulation['Self financed', "Insulation 30%"].value
+#         + 0.85 * model.binary_insulation['Self financed', "Insulation 85%"].value)/sum(model.demand[time, "Heating"] for time in model.set_time)*100)}
 
-reduction_heating_demand["Self financed"].update(d)
+# reduction_heating_demand["Self financed"].update(d)
 
 
-df_reduction_heating_demand= pd.DataFrame.from_dict(data=reduction_heating_demand).T
+# df_reduction_heating_demand= pd.DataFrame.from_dict(data=reduction_heating_demand).T
 # print('df_reduction_heating_demand: ', df_reduction_heating_demand)
 
 results_capacity_default = dict.fromkeys(model.set_default_technologies)
@@ -817,7 +817,7 @@ df_all_results = pd.concat(
         df_results_contractor_rate,
         df_results_binary_insulation_self, 
         df_results_binary_insulation_contractor,
-        df_reduction_heating_demand,
+        # df_reduction_heating_demand,
     ]
 )
 
