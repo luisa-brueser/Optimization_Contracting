@@ -8,7 +8,7 @@ from pprint import pprint
 
 
 input_file_path = (
-    Path(__file__).parent / "data_input_one_year_30_household_30_cars_25kWh_scenario3_test_6_month.xlsx"
+    Path(__file__).parent / "data_input_one_month_30_household_30_cars_25kWh_scenario3.xlsx"
 )
 # input_file_path = (
 #     Path(__file__).parent / "data_input_one_month_one_household_one_car.xlsx"
@@ -278,6 +278,27 @@ def read_cost_data():
 #     print(key)
 
 
+def read_weather_data():
+    """
+    Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
+    """
+
+    weather_df = (
+        pd.read_excel(io=input_file_path, sheet_name="Irradiation and temperatur")
+        .reset_index()
+        .dropna()
+        .set_index("Time")
+    )
+    dict_irradiation = weather_df["Irradiation"].to_dict()
+    dict_temperature = weather_df["Temperature"].to_dict()
+    return (dict_irradiation, dict_temperature)
+
+
+# (dict_irradiation,dict_temperature)=read_weather_data()
+# print('dict_irradiation: ', dict_irradiation)
+
+
+
 def read_demand_data():
     """
     Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
@@ -305,6 +326,8 @@ def read_demand_data():
     ) = read_set_data()
     (dict_general_parameters) = read_general_data()
 
+    (dict_irradiation,dict_temperature)=read_weather_data()
+
     demand_df = (
         pd.read_excel(io=input_file_path, sheet_name="Demand")
         .reset_index()
@@ -312,20 +335,30 @@ def read_demand_data():
         .set_index("Time")
     )
 
+
+
+
     dict_demand = dict()
     for idx1 in set_time:
         for idx2 in set_demand:
             dict_demand[idx1, idx2] = demand_df.loc[idx1][idx2]
+
     # for idx1 in set_time:
-    #     dict_demand[idx1, "Car"] = (
-    #         dict_demand[idx1, "Car"] * dict_general_parameters["Number of Cars"]
-    #     )
-    ############ this only applies if you have one charging curve and want to multiply it with the number of cars
+    #     for idx2 in set_demand:
+    #         if dict_irradiation[idx1] >= 15:
+    #             dict_demand[idx1, "Heating"] = 0
+    
+    # # for idx1 in set_time:
+    # #     if dict_irradiation[idx1] >= 15:
+    # #         dict_demand[idx1, "Heating"] = 0
+
     return dict_demand
 
 
 # (dict_demand) = read_demand_data()
 # pprint(dict_demand)
+
+
 
 
 def read_max_demand():
@@ -392,24 +425,6 @@ def read_max_demand():
 # print("dict_max_demand_default: ", dict_max_demand_default)
 
 
-def read_weather_data():
-    """
-    Reads input data from excel file (e.g. data_input.xlsx) via pandas dataframe, which can then be used as model inputs.
-    """
-
-    weather_df = (
-        pd.read_excel(io=input_file_path, sheet_name="Irradiation and temperatur")
-        .reset_index()
-        .dropna()
-        .set_index("Time")
-    )
-    dict_irradiation = weather_df["Irradiation"].to_dict()
-    dict_temperature = weather_df["Temperature"].to_dict()
-    return (dict_irradiation, dict_temperature)
-
-
-# (dict_irradiation,dict_temperature)=read_weather_data()
-# print('dict_irradiation: ', dict_irradiation)
 
 
 def calculate_COP():
@@ -434,6 +449,10 @@ def calculate_COP():
 
     dict_COP_heating =dict()
     dict_COP_DHW =dict()
+    dict_COP = dict()
+
+    (dict_demand) = read_demand_data()
+
 
     for key in dict_temperatur_outside:
         dict_COP_DHW[key] = (
@@ -442,12 +461,22 @@ def calculate_COP():
         dict_COP_heating[key] = (
             (param_temp_heating+273) / (param_temp_heating+273 - (dict_temperatur_outside[key]+273))
             ) * param_reduction_cop
+
+    for key in dict_temperatur_outside:
+        if dict_demand[key,'DHW'] >=1 or dict_demand[key,'Heating'] >=1:
+            dict_COP[key] = (
+                (dict_COP_DHW[key] * dict_demand[key,'DHW'] + dict_COP_heating[key] * dict_demand[key,'Heating']) /
+        (dict_demand[key,'DHW']  +  dict_demand[key,'Heating'])
+            )
+        else: 
+            dict_COP[key] = 1
+    
         
-    return  dict_COP_DHW, dict_COP_heating
+    return dict_COP
 
 
-# dict_COP_DHW, dict_COP_heating = calculate_COP()
-# print(dict_COP_DHW)
+# dict_COP = calculate_COP()
+# print(dict_COP)
 
 
 

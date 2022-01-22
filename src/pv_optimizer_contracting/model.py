@@ -9,7 +9,7 @@ from pyomo.environ import *
 from pyomo.gdp import Disjunct, Disjunction
 
 # from disjunction import *
-from input_new_model_test import *
+from read_input_parameters import *
 
 model = ConcreteModel()
 
@@ -2632,7 +2632,7 @@ results = opt.solve(model)
 status = results.solver.status
 termination_condition = results.solver.termination_condition
 print("termination_condition: ", termination_condition)
-print("status: ", status)
+# print("status: ", status)
 # print('Total CO2:', round(model.obj()))
 # print('Total Cost:', round(model.obj()), 'Total annual costs')
 # model.ccost7e.pprint()
@@ -3532,7 +3532,7 @@ for finance_options in model.set_finance_options:
         )
 
 
-
+ 
  
 # for time in model.set_time:
 #     print("COP", time, model.cop[time])
@@ -3618,7 +3618,7 @@ print('feedin ST contractor', round(sum(model.supply_from_ST[time, "Contractor",
 #     print(model.cop[time])
 
 print("ST and DH?",model.binary_ST_and_DH.value)
-print(model.binary_ST.value)
+print("ST?",model.binary_ST.value)
 
 
 print('revenue PV',model.revenue_contractor['PV'].value)
