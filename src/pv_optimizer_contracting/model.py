@@ -370,11 +370,25 @@ model.npv_total = Var(
 
 model.revenue_contractor= Var(
     model.set_new_technologies,
+    within=NonNegativeReals,
     doc="Revenue from Contracting for Contractor",
 )
 
+
+# model.revenue_contractor_selling_to_house= Var(
+#     within=NonNegativeReals,
+#     doc="Revenue from selling to house for Contractor",
+# )
+
+
+# model.revenue_contractor_feed_in= Var(
+#     within=NonNegativeReals,
+#     doc="Revenue from feedin for Contractor",
+# )
+
 model.annual_costs_contractor= Var(
-     model.set_new_technologies,
+    model.set_new_technologies,
+    within=NonNegativeReals,
     doc="Annual cost for Contractor for project",
 )
 
@@ -408,18 +422,22 @@ model.annual_costs_contractor= Var(
 # )
 
 model.revenue_contractor_insulation= Var(
+    within=NonNegativeReals,
     doc="Revenue from PV Contracting for Contractor",
 )
 
 model.annual_costs_contractor_insulation= Var(
+    within=NonNegativeReals,
     doc="Annual cost for Contractor for PV",
 )
 
-model.revenue_contractor_energy= Var(
-    doc="Revenue from PV Contracting for Contractor",
-)
+# model.revenue_contractor_energy= Var(
+#     within=NonNegativeReals,
+#     doc="Revenue from PV Contracting for Contractor",
+# )
 
 model.annual_costs_contractor_energy= Var(
+    within=NonNegativeReals,
     doc="Annual cost for Contractor for PV",
 )
 
@@ -800,7 +818,6 @@ def service_costs_rule(model):
         sum(
         model.binary_new_technologies['Self financed', new_technologies]
         * model.cost_new['Self financed', new_technologies, "Service Cost"]
-        #for finance_options in model.set_finance_options
         for new_technologies in model.set_new_technologies)+ \
         + sum(model.contractorrate[technologies]
         for technologies in model.set_new_technologies) \
@@ -871,10 +888,14 @@ def variable_cost_rule(model):
             for default_technologies in model.set_default_technologies
             for time in model.set_time
         )
-        +(sum((model.supply_from_PV[time, "Contractor", PV2technologies]-model.supply_from_PV[time, "Contractor", 'Electric Grid'])
-        * model.cost_new["Contractor", "PV", "Fuel Price"] 
-        for time in model.set_time 
-        for PV2technologies in model.set_PV2))
+        + sum(model.supply_from_PV[time, "Contractor", "Household"] + model.supply_from_PV[time, "Contractor", "Car"] +  model.supply_from_PV[time, "Contractor", "HP"] for time in model.set_time) \
+            * model.cost_new["Contractor", "PV", "Fuel Price"]
+
+
+        # +(sum((model.supply_from_PV[time, "Contractor", PV2technologies]-model.supply_from_PV[time, "Contractor", 'Electric Grid'])
+        # * model.cost_new["Contractor", "PV", "Fuel Price"] 
+        # for time in model.set_time 
+        # for PV2technologies in model.set_PV2))
 
         + sum(
             model.supply_new[time, "Contractor", "Charging Station"]
@@ -941,7 +962,7 @@ def revenue_rule_contractor(model):
 model.ccost5a = Constraint(rule=revenue_rule_contractor, doc="Revenues by feed-in to grid")
 
 
-#####
+####
 def costs_for_contractor_rule(model):
     return model.annual_costs_contractor['PV'] == \
     (model.capacity['Contractor', "PV"]* model.cost_new['Contractor', "PV", "Connection Price"])+ \
@@ -994,19 +1015,99 @@ def costs_for_contractor_rule_6(model):
     
 model.ccost6f = Constraint(rule=costs_for_contractor_rule_6, doc="Contractors costs")
 
-def costs_for_contractor__rule_7(model):
-    return model.annual_costs_contractor_energy == model.weight * \
-        (sum(model.supply_default[time, 'Contractor', 'Gas']* model.spot_gas  for time in model.set_time) +\
-         sum(model.supply_default[time, 'Contractor', 'Electricity']* model.spot_elec for time in model.set_time) +\
-        sum(model.supply_default[time, 'Contractor', 'DH']* model.spot_DH  for time in model.set_time))
+
+
+# def costs_for_contractor__rule_7(model):
+#     return model.annual_costs_contractor_energy == model.weight * \
+#         (sum(model.supply_default[time, 'Contractor', 'Gas']* model.spot_gas  for time in model.set_time) +\
+#          sum(model.supply_default[time, 'Contractor', 'Electricity']* model.spot_elec for time in model.set_time) +\
+#         sum(model.supply_default[time, 'Contractor', 'DH']* model.spot_DH  for time in model.set_time))
     
-model.ccost6g = Constraint(rule=costs_for_contractor__rule_7, doc="Contractors revenue from PV")
+# model.ccost6g = Constraint(rule=costs_for_contractor__rule_7, doc="Contractors revenue from PV")
+
+
+# def revenue_contractor_rule_selling_house_rule(model):
+#     return model.revenue_contractor_selling_to_house ==  model.weight * (sum(model.supply_from_PV[time, "Contractor", "Car"] + model.supply_from_PV[time, "Contractor", "Battery"] + model.supply_from_PV[time, "Contractor", "Household"] +
+#         model.supply_from_PV[time, "Contractor", "HP"] for time in model.set_time) * model.cost_new["Contractor", "PV", "Fuel Price"])  
+
+
+    
+# model.ccostnew= Constraint(rule=revenue_contractor_rule_selling_house_rule, doc="Contractors revenue from PV selling to house")
+
+
+# def revenue_contractor_feed_in_rule(model):
+#     return model.revenue_contractor_feed_in  ==  model.weight * (sum(model.supply_from_PV[time, 'Contractor', "Electric Grid"]* model.cost_default['Contractor',"Electricity", "Feedin Price"]for time in model.set_time))
+    
+# model.ccostnew_2= Constraint(rule=revenue_contractor_feed_in_rule, doc="Contractors revenue from PV feedin")
+
+
+# def revenue_contractor_rule(model):
+#     return model.revenue_contractor['PV'] == model.revenue_contractor_selling_to_house  + model.contractorrate['PV']
+# model.ccost7 = Constraint(rule=revenue_contractor_rule, doc="Contractors revenue from PV")
+
+
+
+
+# original:
+
+
+
+# def revenue_contractor_rule(model):
+#     return model.revenue_contractor['PV'] == model.weight * sum(model.supply_from_PV[time, 'Contractor', "Electric Grid"]* model.cost_default['Contractor',"Electricity", "Feedin Price"]for time in model.set_time) +\
+#             model.weight * (sum((model.supply_from_PV[time, "Contractor", PV2technologies]-model.supply_from_PV[time, "Contractor", 'Electric Grid'])* model.cost_new["Contractor", "PV", "Fuel Price"] for time in model.set_time 
+#             for PV2technologies in model.set_PV2)) + model.contractorrate['PV']
+#         # model.weight *(sum(model.supply_from_PV[time, "Contractor", "Household"] * model.cost_new["Contractor", "PV", "Fuel Price"] for time in model.set_time)))
+# #         model.contractorrate['PV']
+
+
+# model.ccost7 = Constraint(rule=revenue_contractor_rule, doc="Contractors revenue from PV")
+
+
+
+
+
+# def revenue_contractor_rule(model):
+#     return model.revenue_contractor['PV'] ==  (sum((model.supply_from_PV[time, "Contractor", "Household"] +model.supply_from_PV[time, "Contractor", "Car"] +model.supply_from_PV[time, "Contractor", "HP"])  * model.cost_new["Contractor", "PV", "Fuel Price"] for time in model.set_time)) +\
+#         model.contractorrate['PV']
+
+
+
+#  model.weight * (sum(model.supply_from_HP[time, "Contractor", "Household"]* model.cost_new["Contractor", "HP", "Fuel Price"] for time in model.set_time)) +\
+#         model.contractorrate['HP']
+
+
+
+#test:
 
 def revenue_contractor_rule(model):
-    return model.revenue_contractor['PV'] == model.weight * (sum(model.supply_from_PV[time, 'Contractor', "Electric Grid"]* model.cost_default['Contractor',"Electricity", "Feedin Price"]for time in model.set_time)) + \
-        model.contractorrate['PV']+ \
-        model.weight * (sum((model.supply_from_PV[time, "Contractor", PV2technologies]-model.supply_from_PV[time, "Contractor", 'Electric Grid'])* model.cost_new["Contractor", "PV", "Fuel Price"] for time in model.set_time 
-        for PV2technologies in model.set_PV2))
+    return model.revenue_contractor['PV'] == \
+            model.weight * sum(model.supply_from_PV[time, 'Contractor', "Electric Grid"] for time in model.set_time) * model.cost_default['Contractor',"Electricity", "Feedin Price"] +\
+            model.weight * sum(model.supply_from_PV[time, "Contractor", "Household"] + model.supply_from_PV[time, "Contractor", "Car"] +  model.supply_from_PV[time, "Contractor", "HP"] for time in model.set_time) \
+            * model.cost_new["Contractor", "PV", "Fuel Price"] + model.contractorrate['PV']
+
+model.ccost7 = Constraint(rule=revenue_contractor_rule, doc="Contractors revenue from PV")
+
+
+# def revenue_contractor_rule_test(model):
+#     return model.contractorrate['PV'] sum(model.supply_from_PV[time, "Contractor", "Household"] + model.supply_from_PV[time, "Contractor", "Car"] +  model.supply_from_PV[time, "Contractor", "HP"] for time in model.set_time) \
+#             * model.cost_new["Contractor", "PV", "Fuel Price"] + model.contractorrate['PV']
+
+#     # model.weight * sum(model.supply_from_PV[time, 'Contractor', "Electric Grid"] for time in model.set_time) * model.cost_default['Contractor',"Electricity", "Feedin Price"] +\
+
+# model.ccost7 = Constraint(rule=revenue_contractor_rule_test, doc="Contractors revenue from PV")
+
+
+
+
+
+# def revenue_contractor_rule(model):
+#     return model.revenue_contractor['PV'] == model.weight * (sum(model.supply_from_PV[time, 'Contractor', "Electric Grid"]* model.cost_default['Contractor',"Electricity", "Feedin Price"]for time in model.set_time)) + \
+#         model.weight * (sum((model.supply_from_PV[time, 'Contractor', "Car"]+model.supply_from_PV[time, 'Contractor', "Battery"]+model.supply_from_PV[time, 'Contractor', "Household"]+model.supply_from_PV[time, 'Contractor', "HP"])
+#         * model.cost_new["Contractor", "PV", "Fuel Price"] for time in model.set_time))
+# #  model.contractorrate['PV'] 
+
+
+
 
 # def revenue_contractor_rule(model):
 #     return model.revenue_contractor['PV'] == model.weight * (sum(model.supply_from_PV[time, 'Contractor', "Electric Grid"]* model.cost_default['Contractor',"Electricity", "Feedin Price"]for time in model.set_time)) + \
@@ -1025,7 +1126,18 @@ def revenue_contractor_rule(model):
 
 
 
-model.ccost7 = Constraint(rule=revenue_contractor_rule, doc="Contractors revenue from PV")
+
+
+
+
+# def revenue_contractor_bigger_CR(model):
+#     return model.revenue_contractor['PV'] >= model.contractorrate['PV']
+
+
+# model.ccost7_test = Constraint(rule=revenue_contractor_bigger_CR, doc="Contractors revenue from PV")
+
+
+
 
 def revenue_contractor_rule_2(model):
     return model.revenue_contractor['ST'] == model.weight * (sum(model.supply_from_ST[time, 'Contractor', "DH"]* model.cost_default['Contractor',"DH", "Feedin Price"]for time in model.set_time)) + \
@@ -1062,19 +1174,19 @@ def revenue_contractor_rule_6(model):
     
 model.ccost7f = Constraint(rule=revenue_contractor_rule_6, doc="Contractors revenue from PV")
 
-def revenue_contractor_rule_7(model):
-    return model.revenue_contractor_energy == model.weight * \
-        (sum(model.supply_default[time, 'Contractor', 'Gas']* model.cost_default['Contractor', 'Gas', "Fuel Price"] for time in model.set_time) +\
-         sum(model.supply_default[time, 'Contractor', 'Electricity']* model.cost_default['Contractor', 'Electricity', "Fuel Price"]for time in model.set_time) +\
-        sum(model.supply_default[time, 'Contractor', 'DH']* model.cost_default['Contractor', 'DH', "Fuel Price"]for time in model.set_time))
+# def revenue_contractor_rule_7(model):
+#     return model.revenue_contractor_energy == model.weight * \
+#         (sum(model.supply_default[time, 'Contractor', 'Gas']* model.cost_default['Contractor', 'Gas', "Fuel Price"] for time in model.set_time) +\
+#          sum(model.supply_default[time, 'Contractor', 'Electricity']* model.cost_default['Contractor', 'Electricity', "Fuel Price"]for time in model.set_time) +\
+#         sum(model.supply_default[time, 'Contractor', 'DH']* model.cost_default['Contractor', 'DH', "Fuel Price"]for time in model.set_time))
     
-model.ccost7g = Constraint(rule=revenue_contractor_rule_7, doc="Contractors revenue from PV")
+# model.ccost7g = Constraint(rule=revenue_contractor_rule_7, doc="Contractors revenue from PV")
 
 
 
 
 def NPV_contractor_rule(model):
-    return model.npv['PV']== (- (model.capacity['Contractor', 'PV'] * model.cost_new['Contractor', 'PV', "Investment Price"]) + sum(((model.revenue_contractor['PV']-
+    return model.npv['PV'] == (- (model.capacity['Contractor', 'PV'] * model.cost_new['Contractor', 'PV', "Investment Price"]) + sum(((model.revenue_contractor['PV'] -
         model.annual_costs_contractor['PV'])/
         (1+model.interest_contr)**year) for year in model.set_years))
 
@@ -1131,16 +1243,16 @@ def NPV_pos_insulation_contractor(model):
 
 model.ccost10 = Constraint(rule=NPV_pos_insulation_contractor, doc="Contractors NPV needs to be positive")
 
-def NPV_contractor_rule_6(model):
-    return model.npv_total == (- (sum(model.binary_insulation['Contractor', insulation_options]* \
-        model.cost_insulation['Contractor', insulation_options, "Investment Price"] for insulation_options in model.set_insulation_options) + \
-        sum(model.capacity['Contractor', new_technologies] * model.cost_new['Contractor', new_technologies , "Investment Price"] 
-        for new_technologies in model.set_new_technologies )) + \
-        sum(((model.revenue_contractor_insulation + sum(model.revenue_contractor[new_technologies]  for new_technologies in model.set_new_technologies) \
-            - (model.annual_costs_contractor_insulation +sum( model.annual_costs_contractor[new_technologies]  for new_technologies in model.set_new_technologies)))/ \
-        (1+model.interest_contr)**year) for year in model.set_years))
+# def NPV_contractor_rule_6(model):
+#     return model.npv_total == (- (sum(model.binary_insulation['Contractor', insulation_options]* \
+#         model.cost_insulation['Contractor', insulation_options, "Investment Price"] for insulation_options in model.set_insulation_options) + \
+#         sum(model.capacity['Contractor', new_technologies] * model.cost_new['Contractor', new_technologies , "Investment Price"] 
+#         for new_technologies in model.set_new_technologies )) + \
+#         sum(((model.revenue_contractor_insulation + sum(model.revenue_contractor[new_technologies]  for new_technologies in model.set_new_technologies) \
+#             - (model.annual_costs_contractor_insulation +sum( model.annual_costs_contractor[new_technologies]  for new_technologies in model.set_new_technologies)))/ \
+#         (1+model.interest_contr)**year) for year in model.set_years))
 
-model.ccost11 = Constraint(rule=NPV_contractor_rule_6, doc="Contractors NPV")
+# model.ccost11 = Constraint(rule=NPV_contractor_rule_6, doc="Contractors NPV")
 # + model.annual_costs_contractor_energy + model.revenue_contractor_energy
 
 
@@ -2712,17 +2824,17 @@ print("termination_condition: ", termination_condition)
 #     ),
 #     'kWh',
 # )
-# print(
-#     "Sum supply PV to Grid:",
-#     round(
-#         sum(
-#             model.supply_from_PV[time, finance_options, "Electric Grid"].value
-#             for time in model.set_time
-#             for finance_options in model.set_finance_options
-#         )
-#     ),
-#     "kWh",
-# )
+print(
+    "Sum supply PV to Grid:",
+    round(
+        sum(
+            model.supply_from_PV[time, finance_options, "Electric Grid"].value
+            for time in model.set_time
+            for finance_options in model.set_finance_options
+        )
+    ),
+    "kWh",
+)
 print(
     "Sum supply PV to Household:",
     round(
@@ -3642,3 +3754,69 @@ print('test: revenue part2 selling PV', model.weight * (sum(model.supply_from_PV
 #         # sum(model.supply_default[time, 'Contractor', 'Electricity']* model.cost_default['Contractor', 'Electricity', "Fuel Price"]for time in model.set_time))
 
 # print('supply PV to Grid',sum(model.supply_from_PV[time, 'Contractor', "Electric Grid"].value for time in model.set_time) * model.cost_default['Contractor',"Electricity", "Feedin Price"])
+
+
+print('revenue PV', model.revenue_contractor['PV'].value,  'consists of the following parts:') 
+
+print('revenue part1 feedin PV',  model.weight * (sum(model.supply_from_PV[time, 'Contractor', "Electric Grid"].value * model.cost_default['Contractor',"Electricity", "Feedin Price"]for time in model.set_time)))
+print('revenue part2 contractor rate PV', model.contractorrate['PV'].value)
+
+print('revenue part3 selling PV to owner calculated', model.weight * (sum((model.supply_from_PV[time, "Contractor", PV2technologies].value-model.supply_from_PV[time, "Contractor", 'Electric Grid'].value)* model.cost_new["Contractor", "PV", "Fuel Price"] for time in model.set_time 
+        for PV2technologies in model.set_PV2)))
+
+print('revenue part3 selling PV to owner', model.weight * (sum(sum(model.supply_from_PV[time, "Contractor", PV2technologies].value for PV2technologies in model.set_PV2) - \
+    	        model.supply_from_PV[time, "Contractor", 'Electric Grid'].value for time in model.set_time)* model.cost_new["Contractor", "PV", "Fuel Price"] ))
+
+
+#  model.weight * (sum(model.supply_from_PV[time, 'Contractor', "Electric Grid"]* model.cost_default['Contractor',"Electricity", "Feedin Price"]for time in model.set_time)) + \
+#         model.contractorrate['PV']+ \
+#         model.weight * (sum((model.supply_from_PV[time, "Contractor", PV2technologies]-model.supply_from_PV[time, "Contractor", 'Electric Grid'])* model.cost_new["Contractor", "PV", "Fuel Price"] for time in model.set_time 
+#         for PV2technologies in model.set_PV2))
+
+
+
+print('contractorrate', model.contractorrate['PV'].value)
+
+print('1', model.weight * (sum(model.supply_from_PV[time, 'Contractor', "Electric Grid"].value* model.cost_default['Contractor',"Electricity", "Feedin Price"]for time in model.set_time))) 
+
+print('2', model.weight * (sum((model.supply_from_PV[time, "Contractor", PV2technologies].value-model.supply_from_PV[time, "Contractor", 'Electric Grid'].value)* model.cost_new["Contractor", "PV", "Fuel Price"] for time in model.set_time 
+        for PV2technologies in model.set_PV2)))
+
+print('weight:',model.weight.value)
+
+
+# print('revenue from selling to house:', model.revenue_contractor_selling_to_house.value)
+# print('revenue from feedin:', model.revenue_contractor_feed_in.value)
+# print('revenue all:', model.revenue_contractor['PV'].value)
+
+
+
+print(sum((model.supply_from_PV[time, "Contractor", PV2technologies].value -model.supply_from_PV[time, "Contractor", 'Electric Grid'].value)* model.cost_new["Contractor", "PV", "Fuel Price"] \
+    for time in model.set_time for PV2technologies in model.set_PV2))
+
+
+print(sum((model.supply_from_PV[time, "Contractor", "Household"].value +model.supply_from_PV[time, "Contractor", "Car"].value +  model.supply_from_PV[time, "Contractor", "HP"].value)* model.cost_new["Contractor", "PV", "Fuel Price"] \
+    for time in model.set_time)) 
+
+print(sum((model.supply_from_PV[time, "Contractor", PV2technologies].value -model.supply_from_PV[time, "Contractor", 'Electric Grid'].value \
+            for time in model.set_time for PV2technologies in model.set_PV2)))
+print(sum(model.supply_from_PV[time, "Contractor", "Household"].value +model.supply_from_PV[time, "Contractor", "Car"].value +  model.supply_from_PV[time, "Contractor", "HP"].value for time in model.set_time))
+
+
+print(sum(model.supply_from_PV[time, "Contractor", 'Electric Grid'].value  for time in model.set_time))
+
+print(sum(model.supply_from_PV[time, "Contractor", PV2technologies].value for time in model.set_time for PV2technologies in model.set_PV2))
+
+# def revenue_contractor_rule(model):
+#     return model.revenue_contractor['PV'] == (model.weight * (sum(model.supply_from_PV[time, 'Contractor', "Electric Grid"]* model.cost_default['Contractor',"Electricity", "Feedin Price"]for time in model.set_time) \
+#         + sum(model.supply_from_PV[time, "Contractor", "Household"] * model.cost_new["Contractor", "PV", "Fuel Price"] for time in model.set_time))) + \
+#         model.contractorrate['PV']
+        # model.weight *(sum(model.supply_from_PV[time, "Contractor", "Household"] * model.cost_new["Contractor", "PV", "Fuel Price"] for time in model.set_time)))
+#         model.contractorrate['PV']
+
+
+        # model.weight * (sum((model.supply_from_PV[time, "Contractor", PV2technologies]-model.supply_from_PV[time, "Contractor", 'Electric Grid'])* model.cost_new["Contractor", "PV", "Fuel Price"] for time in model.set_time 
+        # for PV2technologies in model.set_PV2)))
+
+
+
