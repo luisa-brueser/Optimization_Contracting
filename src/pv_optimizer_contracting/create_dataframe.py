@@ -11,7 +11,7 @@ from collections import Counter
 
 
 # from pv_optimizer_contracting.new_model_copy import model
-from trial_test import model
+from model import model
 from pprint import pprint
 
 # output_file_path = Path(__file__).parent / "data_output_trial.csv"
@@ -19,11 +19,11 @@ from pprint import pprint
 
 output_file_path = Path(__file__).parent / "data_output_one_year_30_household_30_cars_25kWh_scenario3.csv"
 
-
-
+ 
+ 
 data_template = {
     "Model": "Contracting_model",
-    "Scenario": "Scenario 3 no DSM",
+    "Scenario": "Scenario 3",
     "Region": "Vienna City Border",
     "Variable": None,
     "Unit": "kW",

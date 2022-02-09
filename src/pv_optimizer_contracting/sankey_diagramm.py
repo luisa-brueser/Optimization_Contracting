@@ -15,7 +15,7 @@ from collections import Counter
 from pprint import pprint
 
 # from create_dataframe import output_file_path 
-output_file_path = Path(__file__).parent / "data_output_one_year_30_household_10_cars_50kWh_scenario2_new_formula_HP_2_times_DH.csv"
+output_file_path = Path(__file__).parent / "data_output_one_year_30_household_30_cars_25kWh_scenario3_6_month.csv"
 
 
 df = py.IamDataFrame(output_file_path)
@@ -43,8 +43,11 @@ sankey_mapping = {
     "Sum supply new|Self financed|HP": ("HP Self financed","Thermal demand household"),
     "Sum supply new|Contractor|Battery": ("Battery Contractor","Car"),
     "Sum supply new|Self financed|Battery": ("Battery","Car"),
+    "Sum supply default|Contractor|DH": ("DH grid","Thermal demand household"),
+    "Sum supply default|Contractor|Gas": ("Gas grid","Thermal demand household"),
     "Sum supply default|Self financed|DH": ("DH grid","Thermal demand household"),
     "Sum supply default|Self financed|Gas": ("Gas grid","Thermal demand household"),
+
 
     # "Primary Energy|Gas": ("Natural Gas Extraction", "Gas Network & Power Generation"),
     # "Secondary Energy|Electricity|Non-Biomass Renewables": (

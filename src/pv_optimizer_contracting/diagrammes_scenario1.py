@@ -20,15 +20,15 @@ output_file_path = Path(__file__).parent / "data_output_one_year_30_household_3_
 
 # output_file_path_comparison = Path(__file__).parent / "data_output_one_year_30_household_3_cars_140kWh_scenario1_85%_inv_cost.csv"
 # output_file_path_comparison_2 = Path(__file__).parent / "data_output_one_year_30_household_3_cars_140kWh_scenario1_60%_inv_cost.csv"
-# output_file_path_comparison = Path(__file__).parent /  "data_output_one_year_30_household_3_cars_140kWh_scenario1_CO_70_HP.csv"
-# output_file_path_comparison_2 =Path(__file__).parent /  "data_output_one_year_30_household_3_cars_140kWh_scenario1_CO_115_HP.csv"
-# output_file_path_comparison_3 = Path(__file__).parent / "data_output_one_year_30_household_3_cars_140kWh_scenario1_CO_200_HP.csv"
-# output_file_path_comparison_4 = Path(__file__).parent / "data_output_one_year_30_household_3_cars_140kWh_scenario1_CO_250_HP.csv"
+output_file_path_comparison = Path(__file__).parent /  "data_output_one_year_30_household_3_cars_140kWh_scenario1_CO_70_HP.csv"
+output_file_path_comparison_2 =Path(__file__).parent /  "data_output_one_year_30_household_3_cars_140kWh_scenario1_CO_115_HP.csv"
+output_file_path_comparison_3 = Path(__file__).parent / "data_output_one_year_30_household_3_cars_140kWh_scenario1_CO_200_HP.csv"
+output_file_path_comparison_4 = Path(__file__).parent / "data_output_one_year_30_household_3_cars_140kWh_scenario1_CO_250_HP.csv"
 
-output_file_path_comparison = Path(__file__).parent /  "data_output_one_year_30_household_3_cars_140kWh_scenario1_CO_70_no_HP.csv"
-output_file_path_comparison_2 =Path(__file__).parent /  "data_output_one_year_30_household_3_cars_140kWh_scenario1_CO_115_no_HP.csv"
-output_file_path_comparison_3 = Path(__file__).parent / "data_output_one_year_30_household_3_cars_140kWh_scenario1_CO_200_no_HP.csv"
-output_file_path_comparison_4 = Path(__file__).parent / "data_output_one_year_30_household_3_cars_140kWh_scenario1_CO_250_no_HP.csv"
+# output_file_path_comparison = Path(__file__).parent /  "data_output_one_year_30_household_3_cars_140kWh_scenario1_CO_70_no_HP.csv"
+# output_file_path_comparison_2 =Path(__file__).parent /  "data_output_one_year_30_household_3_cars_140kWh_scenario1_CO_115_no_HP.csv"
+# output_file_path_comparison_3 = Path(__file__).parent / "data_output_one_year_30_household_3_cars_140kWh_scenario1_CO_200_no_HP.csv"
+# output_file_path_comparison_4 = Path(__file__).parent / "data_output_one_year_30_household_3_cars_140kWh_scenario1_CO_250_no_HP.csv"
 
 
 # output_file_path_comparison_DH = Path(__file__).parent / "data_output_one_year_30_household_3_cars_140kWh_scenario1_DH.csv"
@@ -51,15 +51,15 @@ model, scenario = "Contracting_model", "Scenario 1"
 
 # model_comparison, scenario_comparison = "Contracting_model", "Scenario 1 85% inv cost"
 # model_comparison_2, scenario_comparison_2 = "Contracting_model", "Scenario 1 60% inv cost"
-# model_comparison, scenario_comparison = "Contracting_model", "Scenario 1 CO 70 HP"
-# model_comparison_2, scenario_comparison_2 = "Contracting_model", "Scenario 1 CO 115 HP"
-# model_comparison_3, scenario_comparison_3 = "Contracting_model", "Scenario 1 CO 200 HP"
-# model_comparison_4, scenario_comparison_4 = "Contracting_model", "Scenario 1 CO 250 HP"
-model_comparison, scenario_comparison = "Contracting_model", "Scenario 1 CO 70 no HP"
-model_comparison_2, scenario_comparison_2 = "Contracting_model", "Scenario 1 CO 115 no HP"
-model_comparison_3, scenario_comparison_3 = "Contracting_model", "Scenario 1 CO 200 no HP"
-model_comparison_4, scenario_comparison_4 = "Contracting_model", "Scenario 1 CO 250 no HP"
-model_comparison_DH, scenario_comparison_DH = "Contracting_model", "Scenario 1 force DH"
+model_comparison, scenario_comparison = "Contracting_model", "Scenario 1 CO 70 HP"
+model_comparison_2, scenario_comparison_2 = "Contracting_model", "Scenario 1 CO 115 HP"
+model_comparison_3, scenario_comparison_3 = "Contracting_model", "Scenario 1 CO 200 HP"
+model_comparison_4, scenario_comparison_4 = "Contracting_model", "Scenario 1 CO 250 HP"
+# model_comparison, scenario_comparison = "Contracting_model", "Scenario 1 CO 70 no HP"
+# model_comparison_2, scenario_comparison_2 = "Contracting_model", "Scenario 1 CO 115 no HP"
+# model_comparison_3, scenario_comparison_3 = "Contracting_model", "Scenario 1 CO 200 no HP"
+# model_comparison_4, scenario_comparison_4 = "Contracting_model", "Scenario 1 CO 250 no HP"
+# model_comparison_DH, scenario_comparison_DH = "Contracting_model", "Scenario 1 force DH"
 #################### defining colors
 colors_default = ["tab:blue", "tab:cyan", "darkgrey"]
 colors_new = [
@@ -132,7 +132,7 @@ colors_all = [
 # ax2 = ax.twinx() 
 # ax.set_ylim(0, 50)
 # ax2.set_ylim(0, 100)
-# ax.set_ylabel('New capacities in kW/kWh/psc.')
+# ax.set_ylabel('New capacities in kW/kWh/pcs.')
 # ax2.set_ylabel('Reduction heating demand in %')
 # x = np.arange(len(x_labels))
 
@@ -277,7 +277,7 @@ colors_all = [
 # ax2 = ax.twinx() 
 # ax.set_ylim(0, 50)
 # ax2.set_ylim(0, 100)
-# ax.set_ylabel('New capacities in kW/kWh/psc.')
+# ax.set_ylabel('New capacities in kW/kWh/pcs.')
 # ax2.set_ylabel('Reduction heating demand in %')
 # x = np.arange(len(x_labels))
 
@@ -322,206 +322,7 @@ colors_all = [
 # fig.savefig(os.path.join(dir_name,folder_path+"\\"+name_figure))
 
 
-### new capacities comparison CO2 stacked bar plot
-# data_capacitiy_new = df.filter(
-#     model=model,
-#     scenario=scenario,
-#     variable=["Capacity|Self financed|*", "Capacity|Contractor|*","Reduction Heating Demand|*"],
-# )
-
-# data_capacitiy_comparison = df_comparison.filter(
-#     model=model_comparison,
-#     scenario=scenario_comparison,
-#     variable=["Capacity|Self financed|*", "Capacity|Contractor|*","Reduction Heating Demand|*"],
-# )
-
-# data_capacitiy_comparison_2= df_comparison_2.filter(
-#     model=model_comparison_2,
-#     scenario=scenario_comparison_2,
-#     variable=["Capacity|Self financed|*", "Capacity|Contractor|*","Reduction Heating Demand|*"],
-# )
-
-# data_capacitiy_comparison_3= df_comparison_3.filter(
-#     model=model_comparison_3,
-#     scenario=scenario_comparison_3,
-#     variable=["Capacity|Self financed|*", "Capacity|Contractor|*","Reduction Heating Demand|*"],
-# )
-
-# data_capacitiy_comparison_4= df_comparison_4.filter(
-#     model=model_comparison_4,
-#     scenario=scenario_comparison_4,
-#     variable=["Capacity|Self financed|*", "Capacity|Contractor|*","Reduction Heating Demand|*"],
-# )
-
-# variables_new_tech = data_capacitiy_new.filter(
-#     variable="Capacity|Self financed|*"
-# ).variable
-# x_labels = [string.split("|")[2] for string in variables_new_tech] + ["Reduction \n Heating Demand" ]
-# x_labels[1]="Charging \n Station" 
-
-
-# y_self_financed = data_capacitiy_new.filter(variable="Capacity|Self financed|*").data["value"]
-# y_self_financed_insulation = data_capacitiy_new.filter(variable=["Reduction Heating Demand|Self financed"]).data["value"]
-# y_self_financed.loc[len(y_self_financed.index)] = 0
-# y_self_financed_insu= y_self_financed.copy()
-# y_self_financed_insu.loc[1:4] = 0 
-# y_self_financed_insu[5]=y_self_financed_insulation
-
-# y_self_financed_comparison = data_capacitiy_comparison.filter(variable="Capacity|Self financed|*").data["value"]
-# y_self_financed_comparison_insulation = data_capacitiy_comparison.filter(variable=["Reduction Heating Demand|Self financed"]).data["value"]
-
-# y_self_financed_comparison.loc[len(y_self_financed_comparison.index)] = 0
-# y_self_financed_comparison_insu= y_self_financed_comparison.copy()
-# y_self_financed_comparison_insu.loc[1:4] = 0 
-# y_self_financed_comparison_insu[5]=y_self_financed_comparison_insulation
-
-
-
-# y_self_financed_comparison_2 = data_capacitiy_comparison_2.filter(variable="Capacity|Self financed|*").data["value"]
-# y_self_financed_comparison_insulation_2 = data_capacitiy_comparison_2.filter(variable=["Reduction Heating Demand|Self financed"]).data["value"]
-
-# y_self_financed_comparison_2.loc[len(y_self_financed_comparison_2.index)] = 0
-# y_self_financed_comparison_insu_2= y_self_financed_comparison_2.copy()
-# y_self_financed_comparison_insu_2.loc[1:4] = 0 
-# y_self_financed_comparison_insu_2[5]=y_self_financed_comparison_insulation_2
-
-# y_self_financed_comparison_3 = data_capacitiy_comparison_3.filter(variable="Capacity|Self financed|*").data["value"]
-# y_self_financed_comparison_insulation_3 = data_capacitiy_comparison_3.filter(variable=["Reduction Heating Demand|Self financed"]).data["value"]
-
-# y_self_financed_comparison_3.loc[len(y_self_financed_comparison_3.index)] = 0
-# y_self_financed_comparison_insu_3= y_self_financed_comparison_3.copy()
-# y_self_financed_comparison_insu_3.loc[1:4] = 0 
-# y_self_financed_comparison_insu_3[5]=y_self_financed_comparison_insulation_3
-
-
-# y_self_financed_comparison_4 = data_capacitiy_comparison_4.filter(variable="Capacity|Self financed|*").data["value"]
-# y_self_financed_comparison_insulation_4 = data_capacitiy_comparison_4.filter(variable=["Reduction Heating Demand|Self financed"]).data["value"]
-
-# y_self_financed_comparison_4.loc[len(y_self_financed_comparison_4.index)] = 0
-# y_self_financed_comparison_insu_4= y_self_financed_comparison_4.copy()
-# y_self_financed_comparison_insu_4.loc[1:4] = 0 
-# y_self_financed_comparison_insu_4[5]=y_self_financed_comparison_insulation_4
-
-
-
-
-# y_contractor = data_capacitiy_new.filter(variable="Capacity|Contractor|*").data["value"]
-# y_contractor_insulation = data_capacitiy_new.filter(variable=["Reduction Heating Demand|Contractor"]).data["value"]
-
-# y_contractor.loc[len(y_contractor.index)] = 0
-# y_contractor_insu= y_contractor.copy()
-# y_contractor_insu.loc[1:4] = 0 
-# y_contractor_insu[5]=y_contractor_insulation
-
-# y_contractor_comparison = data_capacitiy_comparison.filter(variable="Capacity|Contractor|*").data["value"]
-# y_contractor_insulation_comparison = data_capacitiy_comparison.filter(variable=["Reduction Heating Demand|Contractor"]).data["value"]
-
-# y_contractor_comparison.loc[len(y_contractor_comparison.index)] = 0
-# y_contractor_comparison_insu= y_contractor_comparison.copy()
-# y_contractor_comparison_insu.loc[1:4] = 0 
-# y_contractor_comparison_insu[5]=y_contractor_insulation_comparison
-
-# y_contractor_comparison_2 = data_capacitiy_comparison_2.filter(variable="Capacity|Contractor|*").data["value"]
-# y_contractor_insulation_comparison_2 = data_capacitiy_comparison_2.filter(variable=["Reduction Heating Demand|Contractor"]).data["value"]
-
-# y_contractor_comparison_2.loc[len(y_contractor_comparison_2.index)] = 0
-# y_contractor_comparison_insu_2= y_contractor_comparison_2.copy()
-# y_contractor_comparison_insu_2.loc[1:4] = 0 
-# y_contractor_comparison_insu_2[5]=y_contractor_insulation_comparison_2
-
-# y_contractor_comparison_3 = data_capacitiy_comparison_3.filter(variable="Capacity|Contractor|*").data["value"]
-# y_contractor_insulation_comparison_3 = data_capacitiy_comparison_3.filter(variable=["Reduction Heating Demand|Contractor"]).data["value"]
-
-# y_contractor_comparison_3.loc[len(y_contractor_comparison_3.index)] = 0
-# y_contractor_comparison_insu_3= y_contractor_comparison_3.copy()
-# y_contractor_comparison_insu_3.loc[1:4] = 0 
-# y_contractor_comparison_insu_3[5]=y_contractor_insulation_comparison_3
-
-# y_contractor_comparison_4 = data_capacitiy_comparison_4.filter(variable="Capacity|Contractor|*").data["value"]
-# y_contractor_insulation_comparison_4 = data_capacitiy_comparison_4.filter(variable=["Reduction Heating Demand|Contractor"]).data["value"]
-
-# y_contractor_comparison_4.loc[len(y_contractor_comparison_4.index)] = 0
-# y_contractor_comparison_insu_4= y_contractor_comparison_4.copy()
-# y_contractor_comparison_insu_4.loc[1:4] = 0 
-# y_contractor_comparison_insu_4[5]=y_contractor_insulation_comparison_4
-
-
-
-# # # y_contractor[2] = 5
-# # # y_contractor[3] = 5
-# width = 0.15 # the width of the bars: can also be len(x) sequence
-# # # plt.style.use("science")
-
-# fig, ax = plt.subplots()
-# ax2 = ax.twinx() 
-# ax.set_ylim(0, 90)
-# ax2.set_ylim(0, 100)
-# ax.set_ylabel('New capacities in kW/kWh/psc.')
-# ax2.set_ylabel('Reduction heating demand in %')
-# x = np.arange(len(x_labels))
-# # print('x: ', x)
-# # print(len(x_labels))
-# p1 = ax.bar(x- 2*width , y_self_financed, width=width, align='center', color= 'steelblue', hatch = '--')
-# p2 = ax.bar(x -2*width, y_contractor, width=width, align='center' ,bottom=y_self_financed, color='steelblue',   hatch = '\\\\')
-# p3 = ax2.bar(x - 2*width, y_self_financed_insu, width=width, align='center', color='steelblue', hatch = '--')
-# p4 = ax2.bar(x - 2*width, y_contractor_insu, width=width, align='center' ,bottom=y_self_financed_insu, color= 'steelblue',  hatch = '\\\\')
-
-# p5 = ax.bar(x- 1*width, y_self_financed_comparison, width=width, align='center', color="mediumslateblue",  hatch = '--')
-# p6 = ax.bar(x- 1*width, y_contractor_comparison, width=width, align='center' ,bottom=y_self_financed_comparison, color="mediumslateblue",  hatch = '\\\\')
-# p7 = ax2.bar(x- 1*width, y_self_financed_comparison_insu, width=width, align='center', color="mediumslateblue",  hatch = '--')
-# p8 = ax2.bar(x- 1*width, y_contractor_comparison_insu, width=width, align='center' ,bottom=y_self_financed_comparison_insu, color="mediumslateblue",  hatch = '\\\\')
-
-# p9 = ax.bar(x, y_self_financed_comparison_2, width=width, align='center', color="royalblue", hatch = '--')
-# p10 = ax.bar(x, y_contractor_comparison_2, width=width, align='center' ,bottom=y_self_financed_comparison_2, color="royalblue",  hatch = '\\\\')
-# p11 = ax2.bar(x, y_self_financed_comparison_insu_2, width=width, align='center', color="royalblue",  hatch = '--')
-# p12 = ax2.bar(x, y_contractor_comparison_insu_2, width=width, align='center' ,bottom=y_self_financed_comparison_insu_2, color="royalblue",  hatch = '\\\\')
-
-
-# p13 = ax.bar(x +1*width, y_self_financed_comparison_3, width=width, align='center', color="slategrey", hatch = '--')
-# p14 = ax.bar(x + 1*width, y_contractor_comparison_3, width=width, align='center' ,bottom=y_self_financed_comparison_3, color="slategrey",  hatch = '\\\\')
-# p15 = ax2.bar(x + 1*width, y_self_financed_comparison_insu_3, width=width, align='center', color="slategrey",  hatch = '--')
-# p16 = ax2.bar(x + 1*width, y_contractor_comparison_insu_3, width=width, align='center' ,bottom=y_self_financed_comparison_insu_3, color="slategrey",  hatch = '\\\\')
-
-# p17 = ax.bar(x + 2*width, y_self_financed_comparison_4, width=width, align='center', color="darkorchid", hatch = '--')
-# p18 = ax.bar(x + 2*width, y_contractor_comparison_4, width=width, align='center' ,bottom=y_self_financed_comparison_4, color="royalblue",  hatch = '\\\\')
-# p19 = ax2.bar(x + 2*width, y_self_financed_comparison_insu_4, width=width, align='center', color="darkorchid",  hatch = '--')
-# p20 = ax2.bar(x + 2*width, y_contractor_comparison_insu_4, width=width, align='center' ,bottom=y_self_financed_comparison_insu_4, color="royalblue",  hatch = '\\\\')
-
-
-
-
-
-# ax.set_xticks(x)
-# ax.set_xticklabels(x_labels)
-
-
-# ax.annotate("15% of the original heating demand \n remains after insulation", xy=(4.5, 75), xytext=(2.4,80),
-#         arrowprops=dict(arrowstyle="->"))
-#             #arrowprops=dict(facecolor='black', shrink=0.6))
-
-
-# ax.annotate('no HP installed', xy=(1.76,0), xytext=(0.45,15), arrowprops=dict(arrowstyle="->"))
-        
-
-# # ax.annotate('no HP installed', xy=(2.3,0), xytext=(0.5,20), arrowprops=dict(arrowstyle="->"))
-
-
-# patch1 = mpatches.Patch(color='steelblue', label='default price')
-# patch2 = mpatches.Patch(color='mediumslateblue', label='70€/tCO2')
-# patch3 = mpatches.Patch(color='royalblue', label='115€/tCO2')
-# patch4 = mpatches.Patch(color="slategrey", label='200€/tCO2')
-# patch5 = mpatches.Patch(color="darkorchid", label='250€/tCO2')
-# patch6 = mpatches.Patch(facecolor='ghostwhite', label='financed \n without contractor', hatch = '--')
-# patch7 = mpatches.Patch(facecolor='ghostwhite', label='financed \n by contractor', hatch = '\\\\')
-# plt.legend(handles=[patch1,patch2,patch3,patch4,patch5,patch6,patch7], loc=(0.02, 0.4))
-
-# # ax.set_title("Comparsion new investments Scenario 1 depending on CO2 price")
-
-# name_figure=folder_path+'_new_capacities_comparison_CO2_HP.eps'
-# fig.savefig(os.path.join(dir_name,folder_path+"\\"+name_figure))
-
-
-##### new capacities comparison CO2 stacked bar plot - without HP
+## new capacities comparison CO2 stacked bar plot
 data_capacitiy_new = df.filter(
     model=model,
     scenario=scenario,
@@ -655,7 +456,7 @@ fig, ax = plt.subplots()
 ax2 = ax.twinx() 
 ax.set_ylim(0, 90)
 ax2.set_ylim(0, 100)
-ax.set_ylabel('New capacities in kW/kWh/psc.')
+ax.set_ylabel('New capacities in kW/kWh/pcs.')
 ax2.set_ylabel('Reduction heating demand in %')
 x = np.arange(len(x_labels))
 # print('x: ', x)
@@ -699,7 +500,7 @@ ax.annotate("15% of the original heating demand \n remains after insulation", xy
             #arrowprops=dict(facecolor='black', shrink=0.6))
 
 
-# ax.annotate('no HP installed', xy=(1.76,0), xytext=(0.5,15), arrowprops=dict(arrowstyle="->"))
+ax.annotate('no HP installed', xy=(1.76,0), xytext=(0.45,15), arrowprops=dict(arrowstyle="->"))
         
 
 # ax.annotate('no HP installed', xy=(2.3,0), xytext=(0.5,20), arrowprops=dict(arrowstyle="->"))
@@ -716,11 +517,210 @@ plt.legend(handles=[patch1,patch2,patch3,patch4,patch5,patch6,patch7], loc=(0.02
 
 # ax.set_title("Comparsion new investments Scenario 1 depending on CO2 price")
 
-name_figure=folder_path+'_new_capacities_comparison_CO2_no_HP.eps'
+name_figure=folder_path+'_new_capacities_comparison_CO2_HP.eps'
 fig.savefig(os.path.join(dir_name,folder_path+"\\"+name_figure))
 
 
-######## pie plot default  no HP
+# ##### new capacities comparison CO2 stacked bar plot - without HP
+# data_capacitiy_new = df.filter(
+#     model=model,
+#     scenario=scenario,
+#     variable=["Capacity|Self financed|*", "Capacity|Contractor|*","Reduction Heating Demand|*"],
+# )
+
+# data_capacitiy_comparison = df_comparison.filter(
+#     model=model_comparison,
+#     scenario=scenario_comparison,
+#     variable=["Capacity|Self financed|*", "Capacity|Contractor|*","Reduction Heating Demand|*"],
+# )
+
+# data_capacitiy_comparison_2= df_comparison_2.filter(
+#     model=model_comparison_2,
+#     scenario=scenario_comparison_2,
+#     variable=["Capacity|Self financed|*", "Capacity|Contractor|*","Reduction Heating Demand|*"],
+# )
+
+# data_capacitiy_comparison_3= df_comparison_3.filter(
+#     model=model_comparison_3,
+#     scenario=scenario_comparison_3,
+#     variable=["Capacity|Self financed|*", "Capacity|Contractor|*","Reduction Heating Demand|*"],
+# )
+
+# data_capacitiy_comparison_4= df_comparison_4.filter(
+#     model=model_comparison_4,
+#     scenario=scenario_comparison_4,
+#     variable=["Capacity|Self financed|*", "Capacity|Contractor|*","Reduction Heating Demand|*"],
+# )
+
+# variables_new_tech = data_capacitiy_new.filter(
+#     variable="Capacity|Self financed|*"
+# ).variable
+# x_labels = [string.split("|")[2] for string in variables_new_tech] + ["Reduction \n Heating Demand" ]
+# x_labels[1]="Charging \n Station" 
+
+
+# y_self_financed = data_capacitiy_new.filter(variable="Capacity|Self financed|*").data["value"]
+# y_self_financed_insulation = data_capacitiy_new.filter(variable=["Reduction Heating Demand|Self financed"]).data["value"]
+# y_self_financed.loc[len(y_self_financed.index)] = 0
+# y_self_financed_insu= y_self_financed.copy()
+# y_self_financed_insu.loc[1:4] = 0 
+# y_self_financed_insu[5]=y_self_financed_insulation
+
+# y_self_financed_comparison = data_capacitiy_comparison.filter(variable="Capacity|Self financed|*").data["value"]
+# y_self_financed_comparison_insulation = data_capacitiy_comparison.filter(variable=["Reduction Heating Demand|Self financed"]).data["value"]
+
+# y_self_financed_comparison.loc[len(y_self_financed_comparison.index)] = 0
+# y_self_financed_comparison_insu= y_self_financed_comparison.copy()
+# y_self_financed_comparison_insu.loc[1:4] = 0 
+# y_self_financed_comparison_insu[5]=y_self_financed_comparison_insulation
+
+
+
+# y_self_financed_comparison_2 = data_capacitiy_comparison_2.filter(variable="Capacity|Self financed|*").data["value"]
+# y_self_financed_comparison_insulation_2 = data_capacitiy_comparison_2.filter(variable=["Reduction Heating Demand|Self financed"]).data["value"]
+
+# y_self_financed_comparison_2.loc[len(y_self_financed_comparison_2.index)] = 0
+# y_self_financed_comparison_insu_2= y_self_financed_comparison_2.copy()
+# y_self_financed_comparison_insu_2.loc[1:4] = 0 
+# y_self_financed_comparison_insu_2[5]=y_self_financed_comparison_insulation_2
+
+# y_self_financed_comparison_3 = data_capacitiy_comparison_3.filter(variable="Capacity|Self financed|*").data["value"]
+# y_self_financed_comparison_insulation_3 = data_capacitiy_comparison_3.filter(variable=["Reduction Heating Demand|Self financed"]).data["value"]
+
+# y_self_financed_comparison_3.loc[len(y_self_financed_comparison_3.index)] = 0
+# y_self_financed_comparison_insu_3= y_self_financed_comparison_3.copy()
+# y_self_financed_comparison_insu_3.loc[1:4] = 0 
+# y_self_financed_comparison_insu_3[5]=y_self_financed_comparison_insulation_3
+
+
+# y_self_financed_comparison_4 = data_capacitiy_comparison_4.filter(variable="Capacity|Self financed|*").data["value"]
+# y_self_financed_comparison_insulation_4 = data_capacitiy_comparison_4.filter(variable=["Reduction Heating Demand|Self financed"]).data["value"]
+
+# y_self_financed_comparison_4.loc[len(y_self_financed_comparison_4.index)] = 0
+# y_self_financed_comparison_insu_4= y_self_financed_comparison_4.copy()
+# y_self_financed_comparison_insu_4.loc[1:4] = 0 
+# y_self_financed_comparison_insu_4[5]=y_self_financed_comparison_insulation_4
+
+
+
+
+# y_contractor = data_capacitiy_new.filter(variable="Capacity|Contractor|*").data["value"]
+# y_contractor_insulation = data_capacitiy_new.filter(variable=["Reduction Heating Demand|Contractor"]).data["value"]
+
+# y_contractor.loc[len(y_contractor.index)] = 0
+# y_contractor_insu= y_contractor.copy()
+# y_contractor_insu.loc[1:4] = 0 
+# y_contractor_insu[5]=y_contractor_insulation
+
+# y_contractor_comparison = data_capacitiy_comparison.filter(variable="Capacity|Contractor|*").data["value"]
+# y_contractor_insulation_comparison = data_capacitiy_comparison.filter(variable=["Reduction Heating Demand|Contractor"]).data["value"]
+
+# y_contractor_comparison.loc[len(y_contractor_comparison.index)] = 0
+# y_contractor_comparison_insu= y_contractor_comparison.copy()
+# y_contractor_comparison_insu.loc[1:4] = 0 
+# y_contractor_comparison_insu[5]=y_contractor_insulation_comparison
+
+# y_contractor_comparison_2 = data_capacitiy_comparison_2.filter(variable="Capacity|Contractor|*").data["value"]
+# y_contractor_insulation_comparison_2 = data_capacitiy_comparison_2.filter(variable=["Reduction Heating Demand|Contractor"]).data["value"]
+
+# y_contractor_comparison_2.loc[len(y_contractor_comparison_2.index)] = 0
+# y_contractor_comparison_insu_2= y_contractor_comparison_2.copy()
+# y_contractor_comparison_insu_2.loc[1:4] = 0 
+# y_contractor_comparison_insu_2[5]=y_contractor_insulation_comparison_2
+
+# y_contractor_comparison_3 = data_capacitiy_comparison_3.filter(variable="Capacity|Contractor|*").data["value"]
+# y_contractor_insulation_comparison_3 = data_capacitiy_comparison_3.filter(variable=["Reduction Heating Demand|Contractor"]).data["value"]
+
+# y_contractor_comparison_3.loc[len(y_contractor_comparison_3.index)] = 0
+# y_contractor_comparison_insu_3= y_contractor_comparison_3.copy()
+# y_contractor_comparison_insu_3.loc[1:4] = 0 
+# y_contractor_comparison_insu_3[5]=y_contractor_insulation_comparison_3
+
+# y_contractor_comparison_4 = data_capacitiy_comparison_4.filter(variable="Capacity|Contractor|*").data["value"]
+# y_contractor_insulation_comparison_4 = data_capacitiy_comparison_4.filter(variable=["Reduction Heating Demand|Contractor"]).data["value"]
+
+# y_contractor_comparison_4.loc[len(y_contractor_comparison_4.index)] = 0
+# y_contractor_comparison_insu_4= y_contractor_comparison_4.copy()
+# y_contractor_comparison_insu_4.loc[1:4] = 0 
+# y_contractor_comparison_insu_4[5]=y_contractor_insulation_comparison_4
+
+
+
+# # # y_contractor[2] = 5
+# # # y_contractor[3] = 5
+# width = 0.15 # the width of the bars: can also be len(x) sequence
+# # # plt.style.use("science")
+
+# fig, ax = plt.subplots()
+# ax2 = ax.twinx() 
+# ax.set_ylim(0, 90)
+# ax2.set_ylim(0, 100)
+# ax.set_ylabel('New capacities in kW/kWh/pcs.')
+# ax2.set_ylabel('Reduction heating demand in %')
+# x = np.arange(len(x_labels))
+# # print('x: ', x)
+# # print(len(x_labels))
+# p1 = ax.bar(x- 2*width , y_self_financed, width=width, align='center', color= 'steelblue', hatch = '--')
+# p2 = ax.bar(x -2*width, y_contractor, width=width, align='center' ,bottom=y_self_financed, color='steelblue',   hatch = '\\\\')
+# p3 = ax2.bar(x - 2*width, y_self_financed_insu, width=width, align='center', color='steelblue', hatch = '--')
+# p4 = ax2.bar(x - 2*width, y_contractor_insu, width=width, align='center' ,bottom=y_self_financed_insu, color= 'steelblue',  hatch = '\\\\')
+
+# p5 = ax.bar(x- 1*width, y_self_financed_comparison, width=width, align='center', color="mediumslateblue",  hatch = '--')
+# p6 = ax.bar(x- 1*width, y_contractor_comparison, width=width, align='center' ,bottom=y_self_financed_comparison, color="mediumslateblue",  hatch = '\\\\')
+# p7 = ax2.bar(x- 1*width, y_self_financed_comparison_insu, width=width, align='center', color="mediumslateblue",  hatch = '--')
+# p8 = ax2.bar(x- 1*width, y_contractor_comparison_insu, width=width, align='center' ,bottom=y_self_financed_comparison_insu, color="mediumslateblue",  hatch = '\\\\')
+
+# p9 = ax.bar(x, y_self_financed_comparison_2, width=width, align='center', color="royalblue", hatch = '--')
+# p10 = ax.bar(x, y_contractor_comparison_2, width=width, align='center' ,bottom=y_self_financed_comparison_2, color="royalblue",  hatch = '\\\\')
+# p11 = ax2.bar(x, y_self_financed_comparison_insu_2, width=width, align='center', color="royalblue",  hatch = '--')
+# p12 = ax2.bar(x, y_contractor_comparison_insu_2, width=width, align='center' ,bottom=y_self_financed_comparison_insu_2, color="royalblue",  hatch = '\\\\')
+
+
+# p13 = ax.bar(x +1*width, y_self_financed_comparison_3, width=width, align='center', color="slategrey", hatch = '--')
+# p14 = ax.bar(x + 1*width, y_contractor_comparison_3, width=width, align='center' ,bottom=y_self_financed_comparison_3, color="slategrey",  hatch = '\\\\')
+# p15 = ax2.bar(x + 1*width, y_self_financed_comparison_insu_3, width=width, align='center', color="slategrey",  hatch = '--')
+# p16 = ax2.bar(x + 1*width, y_contractor_comparison_insu_3, width=width, align='center' ,bottom=y_self_financed_comparison_insu_3, color="slategrey",  hatch = '\\\\')
+
+# p17 = ax.bar(x + 2*width, y_self_financed_comparison_4, width=width, align='center', color="darkorchid", hatch = '--')
+# p18 = ax.bar(x + 2*width, y_contractor_comparison_4, width=width, align='center' ,bottom=y_self_financed_comparison_4, color="royalblue",  hatch = '\\\\')
+# p19 = ax2.bar(x + 2*width, y_self_financed_comparison_insu_4, width=width, align='center', color="darkorchid",  hatch = '--')
+# p20 = ax2.bar(x + 2*width, y_contractor_comparison_insu_4, width=width, align='center' ,bottom=y_self_financed_comparison_insu_4, color="royalblue",  hatch = '\\\\')
+
+
+
+
+
+# ax.set_xticks(x)
+# ax.set_xticklabels(x_labels)
+
+
+# ax.annotate("15% of the original heating demand \n remains after insulation", xy=(4.5, 75), xytext=(2.4,80),
+#         arrowprops=dict(arrowstyle="->"))
+#             #arrowprops=dict(facecolor='black', shrink=0.6))
+
+
+# # ax.annotate('no HP installed', xy=(1.76,0), xytext=(0.5,15), arrowprops=dict(arrowstyle="->"))
+        
+
+# # ax.annotate('no HP installed', xy=(2.3,0), xytext=(0.5,20), arrowprops=dict(arrowstyle="->"))
+
+
+# patch1 = mpatches.Patch(color='steelblue', label='default price')
+# patch2 = mpatches.Patch(color='mediumslateblue', label='70€/tCO2')
+# patch3 = mpatches.Patch(color='royalblue', label='115€/tCO2')
+# patch4 = mpatches.Patch(color="slategrey", label='200€/tCO2')
+# patch5 = mpatches.Patch(color="darkorchid", label='250€/tCO2')
+# patch6 = mpatches.Patch(facecolor='ghostwhite', label='financed \n without contractor', hatch = '--')
+# patch7 = mpatches.Patch(facecolor='ghostwhite', label='financed \n by contractor', hatch = '\\\\')
+# plt.legend(handles=[patch1,patch2,patch3,patch4,patch5,patch6,patch7], loc=(0.02, 0.4))
+
+# # ax.set_title("Comparsion new investments Scenario 1 depending on CO2 price")
+
+# name_figure=folder_path+'_new_capacities_comparison_CO2_no_HP.eps'
+# fig.savefig(os.path.join(dir_name,folder_path+"\\"+name_figure))
+
+
+####### pie plot default  no HP
 # data_sum_supply_default = df.filter(
 #     model=model, scenario=scenario, variable=["Sum supply default|Self financed|*"]
 # )
@@ -743,6 +743,7 @@ fig.savefig(os.path.join(dir_name,folder_path+"\\"+name_figure))
 # values_default_comparison_2 = data_sum_supply_default_comparison_2.data["value"]
 # values_default_comparison_3 = data_sum_supply_default_comparison_3.data["value"]
 # values_default_comparison_4 = data_sum_supply_default_comparison_4.data["value"]
+# print('values_default_comparison_4: ', values_default_comparison_4)
 
 # variables_default = data_sum_supply_default.filter( 
 #     variable="Sum supply default|Self financed|*"
@@ -776,7 +777,7 @@ fig.savefig(os.path.join(dir_name,folder_path+"\\"+name_figure))
 
 # patches, texts, autotexts = axs[1].pie(
 #     values_default_comparison_4,
-#     autopct=lambda pct: func(pct, values_default),
+#     autopct=lambda pct: func(pct, values_default_comparison_4),
 #     pctdistance=0.5,
 #     colors=colors_all,
 #     labeldistance=1.1,
@@ -812,7 +813,7 @@ fig.savefig(os.path.join(dir_name,folder_path+"\\"+name_figure))
 
 
 
-######## pie plot default  with HP
+####### pie plot default  with HP
 # data_sum_supply_default = df.filter(
 #     model=model, scenario=scenario, variable=["Sum supply default|Self financed|*"]
 # )
@@ -867,7 +868,7 @@ fig.savefig(os.path.join(dir_name,folder_path+"\\"+name_figure))
 
 # patches, texts, autotexts = axs[0,1].pie(
 #     values_default_comparison,
-#     autopct=lambda pct: func(pct, values_default),
+#     autopct=lambda pct: func(pct, values_default_comparison),
 #     pctdistance=0.5,
 #     colors=colors_all,
 #     labeldistance=1.1,
@@ -878,7 +879,7 @@ fig.savefig(os.path.join(dir_name,folder_path+"\\"+name_figure))
 
 # patches, texts, autotexts = axs[1,0].pie(
 #     values_default_comparison_2  ,
-#     autopct=lambda pct: func(pct, values_default),
+#     autopct=lambda pct: func(pct, values_default_comparison_2),
 #     pctdistance=0.5,
 #     colors=colors_all,
 #     labeldistance=1.1,
@@ -888,7 +889,7 @@ fig.savefig(os.path.join(dir_name,folder_path+"\\"+name_figure))
 
 # patches, texts, autotexts = axs[1,1].pie(
 #     values_default_comparison_4,
-#     autopct=lambda pct: func(pct, values_default),
+#     autopct=lambda pct: func(pct, values_default_comparison_4),
 #     pctdistance=0.5,
 #     colors=colors_all,
 #     labeldistance=1.1,

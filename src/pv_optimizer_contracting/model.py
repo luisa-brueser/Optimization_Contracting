@@ -281,6 +281,9 @@ model.weight = Param(
     doc="Pre-factor for variable costs for an annual result",
 )
 
+# model.weight = Param(
+#     initialize=float(0))
+
 # Demand Parameters
 model.demand = Param(
     model.set_time,
@@ -341,7 +344,7 @@ model.min_capacity_ST_contractor = Param(
 # Vaiables
 model.contractorrate= Var(
     model.set_new_technologies,
-    within=NonNegativeReals,
+    # within=NonNegativeReals,
 #     initialize=dict_contractor_rate,
     doc="Rate €/a charged by contractor",
 )
@@ -535,6 +538,13 @@ model.area_PV = Var(
     within=NonNegativeReals,
     doc="Area of PV built per financing option",
 )
+
+model.area_ST = Var(
+    model.set_finance_options,
+    within=NonNegativeReals,
+    doc="Area of roof needed for ST",
+)
+
 model.demand_shift_total = Var(
     within=NonNegativeReals, doc="Total shift of demand in 1 year"
 )
@@ -608,7 +618,7 @@ model.shifted_demand = Var(
 model.binary_default_technologies = Var(
     model.set_finance_options,
     model.set_default_technologies,
-    initialize={("Self financed","Electricity"): 1, ("Self financed","DH"): 0, ("Self financed",'Gas'): 0,
+    initialize={("Self financed","Electricity"): 1, ("Self financed","DH"): 1, ("Self financed",'Gas'): 0,
     ("Contractor","Electricity"): 0, ("Contractor","DH"): 0, ("Contractor",'Gas'): 0},
     within=Binary,
     doc="Binary Variable becomes TRUE if technology is installed",
@@ -700,8 +710,8 @@ model.capacity['Self financed','Battery'].fix(0)
 model.capacity['Self financed','HP'].fix(0)
 model.capacity['Self financed','Charging Station'].fix(0)
 # # model.capacity["Contractor", "HP"].fix(0)
-# # model.capacity["Contractor",'ST'].fix(5)
-# model.capacity['Contractor','PV'].fix(55)
+# model.capacity["Contractor",'ST'].fix(5)
+# model.capacity['Contractor','PV'].fix(0)
 # model.capacity['Contractor','Battery'].fix(0)
 # model.capacity['Contractor','HP'].fix(0)
 # model.capacity['Contractor','Charging Station'].fix(0)
@@ -937,7 +947,8 @@ model.ccost4a = Constraint(
 def revenue_rule(model):
     return model.revenue_total == model.weight * (
         # model.demand_shift_total * model.bonus_shifting
-        + sum(
+        # + 
+        sum(
             model.supply_from_PV[time, 'Self financed', "Electric Grid"]
             * model.cost_default['Self financed',"Electricity", "Feedin Price"]
             for time in model.set_time
@@ -1233,13 +1244,14 @@ model.ccost8f = Constraint(rule=NPV_contractor_rule_6, doc="Contractors NPV")
 
 def NPV_pos_contractor(model, new_technology):
     return model.npv[new_technology] >= 0
-    #(model.capacity['Contractor', new_technology] * model.cost_new['Contractor', new_technology, "Investment Price"])*0.2
+    # (model.capacity['Contractor', new_technology] * model.cost_new['Contractor', new_technology, "Investment Price"])*0.4
 
 
 model.ccost9 = Constraint(model.set_new_technologies,  rule=NPV_pos_contractor, doc="Contractors NPV needs to be positive")
 
 def NPV_pos_insulation_contractor(model):
     return model.npv_insulation >= 0
+    # (sum(model.binary_insulation['Contractor', insulation_options]*  model.cost_insulation['Contractor', insulation_options, "Investment Price"] for insulation_options in model.set_insulation_options)) *0.4
 
 model.ccost10 = Constraint(rule=NPV_pos_insulation_contractor, doc="Contractors NPV needs to be positive")
 
@@ -1385,10 +1397,7 @@ model.cPV6 = Constraint(
 def shared_roof_rule(model):
     return model.area_roof >= sum(
         model.area_PV[finance_options] for finance_options in model.set_finance_options
-    ) + sum(
-        model.capacity[finance_options, "ST"]
-        for finance_options in model.set_finance_options
-    )
+    ) + sum(model.area_ST[finance_options] for finance_options in model.set_finance_options)
 
 
 model.cPV7 = Constraint(
@@ -1513,17 +1522,17 @@ model.cST7 = Constraint(
 # )
 
 
-# def ST_binary_general(model):
-#     return model.binary_ST * 100 >= sum(
-#         model.binary_new_technologies[finance_options, "ST"]
-#         for finance_options in model.set_finance_options
-#     )
+def ST_binary_general(model):
+    return model.binary_ST * 100 >= sum(
+        model.binary_new_technologies[finance_options, "ST"]
+        for finance_options in model.set_finance_options
+    )
 
 
-# model.cSTtestnew = Constraint(
-#     rule=ST_binary_general,
-#     doc="ST can only supply if capacity is installed",
-# )
+model.cSTtestnew = Constraint(
+    rule=ST_binary_general,
+    doc="ST can only supply if capacity is installed",
+)
 
 
 # def ST_plus_DH_rule(model):
@@ -1539,19 +1548,19 @@ model.cST7 = Constraint(
 # )
 
 
-# # def ST_to_DH_supply_if_both_installed_rule(model, time, finance_options):
-# #     return (
-# #         model.binary_ST_and_DH * 10e10
-# #         >= model.supply_from_ST[time, finance_options, "DH"]
-# #     )
+def ST_to_DH_supply_if_both_installed_rule(model, time, finance_options):
+    return (
+        model.binary_ST_and_DH * 10e10
+        >= model.supply_from_ST[time, finance_options, "DH"]
+    )
 
 
-# # model.cST9 = Constraint(
-# #     model.set_time,
-# #     model.set_finance_options,
-# #     rule=ST_to_DH_supply_if_both_installed_rule,
-# #     doc="supply from ST to DH if ST AND DH are installed",
-# # )
+model.cST9 = Constraint(
+    model.set_time,
+    model.set_finance_options,
+    rule=ST_to_DH_supply_if_both_installed_rule,
+    doc="supply from ST to DH if ST AND DH are installed",
+)
 
 
 # def binary_ST_to_DH_supply_rule(model, time, finance_options):
@@ -1582,6 +1591,27 @@ model.cST7 = Constraint(
 #     rule=ST_binary_if_supply_to_DH_rule,
 #     doc="ST can only supply to DH if DH is installed",
 # )
+
+def ST_area_required_rule(model):
+    return (
+        sum(
+            model.area_ST[finance_options]
+            for finance_options in model.set_finance_options
+        )
+        == sum(
+            model.capacity[finance_options, "ST"]
+            for finance_options in model.set_finance_options
+        )
+        / model.area_density_ST
+    )
+
+
+model.cST11= Constraint(
+    rule=ST_area_required_rule,
+    doc="ST area needed for the ST capacity",
+)
+
+
 
 
 #### Insulation Constraints
@@ -1926,6 +1956,7 @@ def battery_no_split_rule(model):
 
 
 model.cbat9 = Constraint(
+    # model.set_finance_options,
     rule=battery_no_split_rule,
     doc="Battery is only financed by one party no split possible",
 )
@@ -1941,6 +1972,19 @@ model.cbat9 = Constraint(
 #     rule=battery_capacity_no_supply_rule,
 #     doc="Battery has no supply",
 # )
+
+
+
+# def battery_min_capacity(model,finance_options):
+#     return inequality(0.1, model.capacity[finance_options, "Battery"], 10000)
+
+# model.cbat10 = Constraint(
+#     model.set_finance_options,
+#     rule=battery_min_capacity,
+#     doc="Battery at least 1 kWh",
+# )
+
+
 
 
 #### Heating System Constraints
@@ -2565,22 +2609,22 @@ model.c_grid4 = Constraint(
 
 
 
-## Demand Side Management Constraints
-# def no_shift_rule(model):
-#     return sum(model.demand_shift_up[time] for time in model.set_time) == 0
+# Demand Side Management Constraints
+def no_shift_rule(model):
+    return sum(model.demand_shift_up[time] for time in model.set_time) == 0
 
 
-# model.c_dsm0a = Constraint(rule=no_shift_rule, doc="No up shifts")
+model.c_dsm0a = Constraint(rule=no_shift_rule, doc="No up shifts")
 
 
-# def no_shift_rule_2(model):
-#     return sum(model.demand_shift_down[time] for time in model.set_time) == 0
+def no_shift_rule_2(model):
+    return sum(model.demand_shift_down[time] for time in model.set_time) == 0
 
 
-# model.c_dsm0b = Constraint(
-#     rule=no_shift_rule_2,
-#     doc="No down shifts",
-# )
+model.c_dsm0b = Constraint(
+    rule=no_shift_rule_2,
+    doc="No down shifts",
+)
 
 
 # def first_up_shift_rule(model):
@@ -2689,20 +2733,20 @@ model.c_grid4 = Constraint(
 # )
 
 
-# def shifted_demand_rule(model, time):
-#     return (
-#         model.shifted_demand[time]
-#         == model.demand[time, "Car"]
-#         + model.demand_shift_up[time]
-#         - model.demand_shift_down[time]
-#     )
+def shifted_demand_rule(model, time):
+    return (
+        model.shifted_demand[time]
+        == model.demand[time, "Car"]
+        + model.demand_shift_up[time]
+        - model.demand_shift_down[time]
+    )
 
 
-# model.c_dsm10 = Constraint(
-#     model.set_time,
-#     rule=shifted_demand_rule,
-#     doc="Shifted demand defined by upshifts and downshifts",
-# )
+model.c_dsm10 = Constraint(
+    model.set_time,
+    rule=shifted_demand_rule,
+    doc="Shifted demand defined by upshifts and downshifts",
+)
 
 ########
 
@@ -2729,7 +2773,7 @@ model.c_grid4 = Constraint(
 
 
 opt = SolverFactory("glpk")
-opt.options["mipgap"] = 0.1
+# opt.options["mipgap"] = 0.1
 results = opt.solve(model)
 # results=model.solve(GLPK(options=['--mipgap',0.01])
 
@@ -3457,22 +3501,22 @@ print(
 #     ),
 # )
 
-# print(
-#     "shifted Demand",
-#     round(sum(model.shifted_demand[time].value for time in model.set_time)),
-# )
-# print(
-#     "original charging demand",
-#     round(sum(model.demand[time, "Car"] for time in model.set_time)),
-# )
-# print(
-#     "shifts up",
-#     round(sum(model.demand_shift_up[time].value for time in model.set_time)),
-# )
-# print(
-#     "shifts down",
-#     round(sum(model.demand_shift_down[time].value for time in model.set_time)),
-# )
+print(
+    "shifted Demand",
+    round(sum(model.shifted_demand[time].value for time in model.set_time)),
+)
+print(
+    "original charging demand",
+    round(sum(model.demand[time, "Car"] for time in model.set_time)),
+)
+print(
+    "shifts up",
+    round(sum(model.demand_shift_up[time].value for time in model.set_time)),
+)
+print(
+    "shifts down",
+    round(sum(model.demand_shift_down[time].value for time in model.set_time)),
+)
 
 # print("Checking car5 and car 4")
 # for finance_options in model.set_finance_options:
@@ -3715,6 +3759,17 @@ print('NPV total',model.npv_total.value)
 
 print('number cars', model.number_cars.value)
 print('PV max',model.max_capacity_PV.value)
+print('PV area', sum(
+        model.area_PV[finance_options].value for finance_options in model.set_finance_options)
+    )
+
+print('ST max',model.max_capacity_ST.value)
+print('ST area',sum(
+            model.area_ST[finance_options].value
+            for finance_options in model.set_finance_options)
+        )
+print('binary DH Self financed',model.binary_default_technologies['Self financed',"DH"].value)
+print('binary DH contracto',model.binary_default_technologies['Contractor',"DH"].value)
 
 print('total supply PV contractor', round(sum(model.supply_from_PV[time, "Contractor", PV2technologies].value for time in model.set_time for PV2technologies in model.set_PV2)))
 print('feedin PV contractor', round(sum(model.supply_from_PV[time, "Contractor", 'Electric Grid'].value for time in model.set_time)))
@@ -3819,4 +3874,8 @@ print(sum(model.supply_from_PV[time, "Contractor", PV2technologies].value for ti
         # for PV2technologies in model.set_PV2)))
 
 
+# for time in model.set_time:
+#     print(time, 'shift up',model.demand_shift_up[time].value)
 
+# for time in model.set_time:
+#     print(time, 'shift down',model.demand_shift_down[time].value)
